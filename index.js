@@ -273,7 +273,8 @@ app.get('/api/auth/login', (req, res) => {
     res.redirect(url);
 });
 
-app.get('/api/auth/callback', async (req, res) => {
+// Alias: handle both /auth/discord/callback and /api/auth/callback
+async function handleOAuthCallback(req, res) {
     const code = req.query.code;
     if (!code) return res.redirect('/');
     try {
@@ -295,7 +296,11 @@ app.get('/api/auth/callback', async (req, res) => {
         console.error('OAuth Callback Error:', err);
         res.redirect('/');
     }
-});
+}
+
+// Register both paths so Discord OAuth works regardless of which redirect URI was set
+app.get('/api/auth/callback', handleOAuthCallback);
+app.get('/auth/discord/callback', handleOAuthCallback);
 
 app.get('/api/auth/me', async (req, res) => {
     if (!req.session.token) return res.status(401).json({ error: 'Unauthorized' });
