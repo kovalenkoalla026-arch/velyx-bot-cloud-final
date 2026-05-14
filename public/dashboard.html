@@ -1445,6 +1445,9 @@
 
             renderQuestions();
             updateRecruitmentPreview();
+            
+            // Reset originalConfig baseline AFTER form is filled so no false "unsaved changes" appears
+            originalConfig = JSON.parse(JSON.stringify(currentConfig));
             checkChanges();
         }
 
