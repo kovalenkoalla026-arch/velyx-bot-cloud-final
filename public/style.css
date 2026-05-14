@@ -1,0 +1,335 @@
+:root {
+      --bg-dark: #0f1014;
+      --sidebar-bg: #15171c;
+      --card-bg: #1a1c23;
+      --accent-blue: #5865F2;
+      --text-main: #ffffff;
+      --text-muted: #8e9297;
+      --border-color: #2b2d31;
+      --success: #2ecc71;
+      --danger: #e74c3c;
+      --warning: #f1c40f;
+}
+
+* {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+      font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+}
+
+body {
+      background: var(--bg-dark);
+      color: var(--text-main);
+      min-height: 100vh;
+}
+
+/* Layout */
+.app-container {
+      display: flex;
+      min-height: 100vh;
+}
+
+/* Sidebar */
+.sidebar {
+      width: 260px;
+      background: var(--sidebar-bg);
+      border-right: 1px solid var(--border-color);
+      padding: 24px 16px;
+      display: flex;
+      flex-direction: column;
+}
+
+.logo-section {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      padding: 0 8px 32px;
+}
+
+.logo-section img {
+      width: 32px;
+      height: 32px;
+      border-radius: 8px;
+}
+
+.logo-section h1 {
+      font-size: 20px;
+      font-weight: 700;
+}
+
+.nav-menu {
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
+}
+
+.nav-item {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      padding: 12px;
+      text-decoration: none;
+      color: var(--text-muted);
+      border-radius: 8px;
+      transition: all 0.2s;
+}
+
+.nav-item:hover {
+      background: rgba(255, 255, 255, 0.05);
+      color: var(--text-main);
+}
+
+.nav-item.active {
+      background: var(--accent-blue);
+      color: var(--text-main);
+}
+
+/* Main Content */
+.main-content {
+      flex: 1;
+      padding: 32px;
+      overflow-y: auto;
+}
+
+.header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 32px;
+}
+
+/* Dashboard Cards */
+.stats-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+      gap: 24px;
+      margin-bottom: 32px;
+}
+
+.stat-card {
+      background: var(--card-bg);
+      padding: 24px;
+      border-radius: 16px;
+      border: 1px solid var(--border-color);
+}
+
+.stat-card .label {
+      color: var(--text-muted);
+      font-size: 14px;
+      margin-bottom: 8px;
+}
+
+.stat-card .value {
+      font-size: 28px;
+      font-weight: 700;
+}
+
+/* Config Sections */
+.config-section {
+      background: var(--card-bg);
+      border-radius: 16px;
+      border: 1px solid var(--border-color);
+      margin-bottom: 24px;
+      overflow: hidden;
+}
+
+.section-header {
+      padding: 20px 24px;
+      background: rgba(255, 255, 255, 0.02);
+      border-bottom: 1px solid var(--border-color);
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+}
+
+.section-body {
+      padding: 24px;
+}
+
+/* Forms */
+.form-group {
+      margin-bottom: 20px;
+}
+
+.form-group label {
+      display: block;
+      margin-bottom: 8px;
+      color: var(--text-muted);
+      font-size: 14px;
+}
+
+input, select, textarea {
+      width: 100%;
+      background: #0b0c0f;
+      border: 1px solid var(--border-color);
+      border-radius: 8px;
+      padding: 12px;
+      color: var(--text-main);
+      transition: border-color 0.2s;
+}
+
+input:focus, select:focus, textarea:focus {
+      outline: none;
+      border-color: var(--accent-blue);
+}
+
+/* Buttons */
+.btn {
+      padding: 10px 20px;
+      border-radius: 8px;
+      border: none;
+      cursor: pointer;
+      font-weight: 600;
+      transition: opacity 0.2s;
+}
+
+.btn-primary {
+      background: var(--accent-blue);
+      color: white;
+}
+
+.btn-secondary {
+      background: rgba(255, 255, 255, 0.1);
+      color: white;
+}
+
+/* Toggle Switch */
+.switch {
+        position: relative;
+        display: inline-block;
+        width: 48px;
+        height: 24px;
+}
+
+.switch input {
+        opacity: 0;
+        width: 0;
+        height: 0;
+}
+
+.slider {
+      position: absolute;
+      cursor: pointer;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      background-color: #333;
+      transition: .4s;
+      border-radius: 24px;
+}
+
+.slider:before {
+      position: absolute;
+      content: "";
+      height: 18px;
+      width: 18px;
+      left: 3px;
+      bottom: 3px;
+      background-color: white;
+      transition: .4s;
+      border-radius: 50%;
+}
+
+input:checked + .slider {
+      background-color: var(--success);
+}
+
+input:checked + .slider:before {
+      transform: translateX(24px);
+}
+
+/* Server Grid */
+.server-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+      gap: 20px;
+}
+
+.server-card {
+      background: var(--card-bg);
+      border-radius: 16px;
+      border: 1px solid var(--border-color);
+      padding: 20px;
+      text-align: center;
+      cursor: pointer;
+      transition: transform 0.2s;
+}
+
+.server-card:hover {
+      transform: translateY(-4px);
+      border-color: var(--accent-blue);
+}
+
+.server-icon {
+      width: 64px;
+      height: 64px;
+      border-radius: 50%;
+      margin-bottom: 12px;
+}
+
+/* Landing Page Styles */
+.landing-hero {
+      height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      background: linear-gradient(rgba(15, 16, 20, 0.8), rgba(15, 16, 20, 0.8)), url('bg.png');
+      background-size: cover;
+      background-position: center;
+}
+
+.hero-content {
+      text-align: center;
+      max-width: 800px;
+}
+
+.hero-content h1 {
+      font-size: 64px;
+      margin-bottom: 24px;
+}
+
+/* Rules Styles */
+.rule-embed-preview {
+      background: #2b2d31;
+      border-radius: 4px;
+      padding: 16px;
+      border-left: 4px solid var(--accent-blue);
+      margin-bottom: 12px;
+}
+
+.embed-title { font-weight: 700; margin-bottom: 8px; }
+.embed-content { font-size: 14px; color: #dbdee1; white-space: pre-wrap; }
+
+/* Grid Structure Styles */
+.structure-container {
+      background: #111214;
+      padding: 20px;
+      border-radius: 8px;
+}
+
+.category-item {
+      background: rgba(255,255,255,0.03);
+      margin-bottom: 12px;
+      border-radius: 4px;
+}
+
+.cat-header {
+      padding: 8px 12px;
+      display: flex;
+      justify-content: space-between;
+      cursor: pointer;
+}
+
+.channel-list {
+      padding: 8px 24px;
+      border-left: 2px solid #333;
+      margin-left: 12px;
+}
+
+.channel-item {
+      padding: 4px 0;
+      display: flex;
+      justify-content: space-between;
+}
