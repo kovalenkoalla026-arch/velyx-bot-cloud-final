@@ -1,0 +1,271 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Реклама | Fluxlace Community</title>
+    <link rel="stylesheet" href="style.css">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;800&family=Outfit:wght@400;700&display=swap" rel="stylesheet">
+</head>
+<body class="ads-page">
+    <div class="background-overlay"></div>
+    
+    <nav class="navbar">
+        <div class="logo">Fluxlace</div>
+        <div class="nav-links">
+            <a href="index.html">Набор</a>
+            <a href="ads.html" class="active">Реклама</a>
+        </div>
+    </nav>
+
+    <div class="container">
+        <header class="hero">
+            <div class="hero-content">
+                <h1>Масштабируй свой проект с нами</h1>
+                <p>Разместите рекламу в крупнейших игровых сообществах RU/UA сегмента. Более 3000 активных участников ждут ваш продукт.</p>
+                <div class="hero-stats">
+                    <div class="stat-item">
+                        <span class="stat-value">5+</span>
+                        <span class="stat-label">Серверов</span>
+                    </div>
+                    <div class="stat-item">
+                        <span class="stat-value">3.2k</span>
+                        <span class="stat-label">Участников</span>
+                    </div>
+                    <div class="stat-item">
+                        <span class="stat-value">500+</span>
+                        <span class="stat-label">Ежедневный актив</span>
+                    </div>
+                </div>
+            </div>
+            <div class="hero-image">
+                <!-- В будущем тут будет картинка -->
+                <div class="glow-effect"></div>
+            </div>
+        </header>
+
+        <section class="servers-grid">
+            <div class="section-title">
+                <h2>Наши площадки</h2>
+                <p>Выберите подходящую аудиторию для вашего продвижения</p>
+            </div>
+            
+            <div class="grid">
+                <!-- 7DS Origin -->
+                <div class="server-card">
+                    <div class="server-banner sds"></div>
+                    <div class="server-info">
+                        <h3>7DS: Origin RU/UA</h3>
+                        <div class="server-metrics">
+                            <span>👥 1226</span>
+                            <span>🟢 292</span>
+                        </div>
+                        <p>Активное сообщество по новой игре во вселенной Семи Смертных Грехов.</p>
+                    </div>
+                </div>
+
+                <!-- Death Note -->
+                <div class="server-card">
+                    <div class="server-banner dn"></div>
+                    <div class="server-info">
+                        <h3>Death Note: Killer Within</h3>
+                        <div class="server-metrics">
+                            <span>👥 240</span>
+                            <span>🟢 81</span>
+                        </div>
+                        <p>Фанатское сообщество по детективной игре Death Note.</p>
+                    </div>
+                </div>
+
+                <!-- Invincible VS -->
+                <div class="server-card">
+                    <div class="server-banner iv"></div>
+                    <div class="server-info">
+                        <h3>INVINCIBLE VS RU/UA</h3>
+                        <div class="server-metrics">
+                            <span>👥 238</span>
+                            <span>🟢 73</span>
+                        </div>
+                        <p>Сообщество фанатов вселенной "Неуязвимый".</p>
+                    </div>
+                </div>
+                
+                <!-- Solo Leveling -->
+                <div class="server-card">
+                    <div class="server-banner sl"></div>
+                    <div class="server-info">
+                        <h3>Solo Leveling: Arise</h3>
+                        <div class="server-metrics">
+                            <span>👥 112</span>
+                            <span>🟢 31</span>
+                        </div>
+                        <p>Динамичное сообщество по популярной мобильной Action-RPG.</p>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <section class="pricing">
+            <div class="section-title">
+                <h2>Тарифы размещения</h2>
+            </div>
+            
+            <div class="pricing-grid">
+                <div class="price-card">
+                    <h3>Базовый</h3>
+                    <div class="price">500₽ <span>/ пост</span></div>
+                    <ul>
+                        <li>Сообщение в общий канал</li>
+                        <li>Без упоминания ролей</li>
+                        <li>Текст + 1 картинка</li>
+                        <li>Доступно 24 часа</li>
+                    </ul>
+                    <button class="order-btn" data-package="Базовый">Выбрать</button>
+                </div>
+
+                <div class="price-card featured">
+                    <div class="badge">Популярный</div>
+                    <h3>Стандарт</h3>
+                    <div class="price">1200₽ <span>/ пост</span></div>
+                    <ul>
+                        <li>Сообщение в @everyone</li>
+                        <li>Закреп на 48 часов</li>
+                        <li>Текст + Галерея</li>
+                        <li>Кнопка-ссылка</li>
+                    </ul>
+                    <button class="order-btn primary" data-package="Стандарт">Выбрать</button>
+                </div>
+
+                <div class="price-card">
+                    <h3>Партнерский</h3>
+                    <div class="price">3000₽ <span>/ месяц</span></div>
+                    <ul>
+                        <li>Отдельный канал проекта</li>
+                        <li>Роль партнера для админа</li>
+                        <li>Еженедельные упоминания</li>
+                        <li>Баннер в описании сервера</li>
+                    </ul>
+                    <button class="order-btn" data-package="Партнерский">Выбрать</button>
+                </div>
+            </div>
+        </section>
+
+        <section id="order-section" class="order-form-container hidden">
+            <div class="section-title">
+                <h2>Оформить заказ</h2>
+                <p>Заполните детали, и наш менеджер свяжется с вами</p>
+            </div>
+            
+            <form id="adsForm">
+                <input type="hidden" id="selectedPackage" name="package">
+                
+                <div class="form-row">
+                    <div class="input-group">
+                        <label for="advertiser_discord">Ваш Discord Tag</label>
+                        <input type="text" id="advertiser_discord" name="discord" placeholder="name#0000" required>
+                    </div>
+                    <div class="input-group">
+                        <label for="server_select">Сервер для рекламы</label>
+                        <select id="server_select" name="server" required>
+                            <option value="7DS Origin">7DS: Origin</option>
+                            <option value="Death Note">Death Note</option>
+                            <option value="Invincible VS">Invincible VS</option>
+                            <option value="Solo Leveling">Solo Leveling</option>
+                            <option value="Все серверы">Весь кластер (Скидка 20%)</option>
+                        </select>
+                    </div>
+                </div>
+
+                <div class="input-group">
+                    <label for="ad_content">Текст рекламного объявления</label>
+                    <textarea id="ad_content" name="content" placeholder="Опишите ваш проект и прикрепите ссылки..." required></textarea>
+                </div>
+
+                <button type="submit" id="submitAdsBtn">
+                    <span>Подтвердить заказ</span>
+                    <div class="loader" id="loader"></div>
+                </button>
+                <button type="button" class="cancel-btn" onclick="hideOrderForm()">Отмена</button>
+            </form>
+        </section>
+
+        <div id="adsSuccess" class="hidden">
+            <div class="success-icon">🚀</div>
+            <h2>Заказ принят!</h2>
+            <p>Ваша заявка на рекламу отправлена модераторам. Мы свяжемся с вами в Discord в ближайшее время.</p>
+            <button onclick="window.location.reload()" class="secondary-btn">Вернуться</button>
+        </div>
+
+        <footer>
+            &copy; 2026 Fluxlace Community. Рекламный отдел.
+        </footer>
+    </div>
+
+    <script>
+        const orderSection = document.getElementById('order-section');
+        const adsForm = document.getElementById('adsForm');
+        const selectedPackageInput = document.getElementById('selectedPackage');
+        const adsSuccess = document.getElementById('adsSuccess');
+        const submitAdsBtn = document.getElementById('submitAdsBtn');
+        const loader = document.getElementById('loader');
+
+        document.querySelectorAll('.order-btn').forEach(btn => {
+            btn.addEventListener('click', () => {
+                const pkg = btn.getAttribute('data-package');
+                selectedPackageInput.value = pkg;
+                orderSection.classList.remove('hidden');
+                orderSection.scrollIntoView({ behavior: 'smooth' });
+                
+                // Highlight the selected package in the title or text
+                document.querySelector('#order-section p').textContent = `Вы выбрали пакет: ${pkg}`;
+            });
+        });
+
+        function hideOrderForm() {
+            orderSection.classList.add('hidden');
+        }
+
+        adsForm.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            
+            submitAdsBtn.disabled = true;
+            loader.style.display = 'block';
+            submitAdsBtn.querySelector('span').style.opacity = '0';
+
+            const formData = {
+                package: adsForm.package.value,
+                discord: adsForm.discord.value,
+                server: adsForm.server.value,
+                content: adsForm.content.value
+            };
+
+            try {
+                const response = await fetch('/api/ads', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(formData)
+                });
+
+                if (response.ok) {
+                    orderSection.classList.add('hidden');
+                    document.querySelector('.hero').classList.add('hidden');
+                    document.querySelector('.servers-grid').classList.add('hidden');
+                    document.querySelector('.pricing').classList.add('hidden');
+                    adsSuccess.classList.remove('hidden');
+                } else {
+                    alert('Ошибка при отправке заказа. Попробуйте позже.');
+                }
+            } catch (error) {
+                console.error(error);
+                alert('Произошла ошибка соединения.');
+            } finally {
+                submitAdsBtn.disabled = false;
+                loader.style.display = 'none';
+                submitAdsBtn.querySelector('span').style.opacity = '1';
+            }
+        });
+    </script>
+</body>
+</html>
