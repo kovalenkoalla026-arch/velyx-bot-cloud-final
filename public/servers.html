@@ -1,0 +1,54 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <title>Select Server | Project Nova</title>
+      <link rel="stylesheet" href="style.css">
+      <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+  </head>
+<body>
+      <div class="app-container" style="justify-content: center; align-items: center; padding: 40px;">
+                <div style="max-width: 1000px; width: 100%;">
+                              <header style="text-align: center; margin-bottom: 48px;">
+                                                <h1 style="font-size: 32px; margin-bottom: 12px;">Welcome back!</h1>h1>
+                                                <p style="color: var(--text-muted);">Select a server to manage</p>p>
+                              </header>header>
+
+                              <div id="guilds-grid" class="server-grid">
+                                                <!-- Guilds will be loaded here -->
+                                                <div class="loading" style="grid-column: 1/-1; text-align: center; padding: 40px;">
+                                                                      <i class="fas fa-spinner fa-spin fa-2x"></i>i>
+                                                </div>div>
+                              </div>div>
+                </div>div>
+      </div>div>
+
+      <script>
+                async function loadGuilds() {
+                              try {
+                                                const res = await fetch('/api/guilds');
+                                                const guilds = await res.json();
+
+                                                const grid = document.getElementById('guilds-grid');
+                                                grid.innerHTML = guilds.map(guild => \`
+                                                                    <div class="server-card" onclick="location.href='/dashboard.html?id=\${guild.id}'">
+                                                                                            <img class="server-icon" src="\${guild.icon ? \\\`https://cdn.discordapp.com/icons/\${guild.id}/\${guild.icon}.png\\\` : 'https://cdn.discordapp.com/embed/avatars/0.png'}" alt="\${guild.name}">
+                                                                                                                    <div style="font-weight: 600; margin-bottom: 4px;">\${guild.name}</div>
+                                                                                                                                            <div style="font-size: 12px; color: \${guild.botIn ? 'var(--success)' : 'var(--text-muted)'}">
+                                                                                                                                                                        \${guild.botIn ? 'Manage' : 'Add to Server'}
+                                                                                                                                                                                                </div>
+                                                                                                                                                                                                                    </div>
+                                                                                                                                                                                                                                    \`).join('');
+                                                                                                                                                                                                                                                } catch (err) {
+                                                                                                                                                                                                                                                                console.error(err);
+                                                                                                                                                                                                                                                                            }
+                                                                                                                                                                                                                                                                                    }
+                                                                                                                                                                                                                                                                                            loadGuilds();
+                                                                                                                                                                                                                                                                                                </script>
+</body>
+</html>html>
+
+      </script>
+</body></title>
+  </head>
