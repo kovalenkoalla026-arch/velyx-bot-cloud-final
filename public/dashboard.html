@@ -1,0 +1,64 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <title>Velyx Bot - Dashboard</title>
+      <link rel="stylesheet" href="/style.css">
+  </head>
+<body>
+      <header>
+                <nav>
+                              <div class="logo">Velyx Bot</div>div>
+                              <ul class="nav-links">
+                                                <li><a href="/">Home</a>a></li>
+                                              <li><a href="/dashboard">Dashboard</a>a></li>
+                                              <li><a href="/servers">Servers</a>a></li>
+                              </ul>ul>
+                            <div class="user-info" id="userInfo">
+                                            <!-- User info will be injected here -->
+                            </div>div>
+                </nav>
+      </header>
+    <main>
+              <section class="dashboard-section">
+                            <h1>User Dashboard</h1>
+                          <div id="userData" class="user-card">
+                                          <p>Loading your data...</p>
+                          </div>div>
+              </section>section>
+    </main>
+    <script>
+              fetch('/api/user')
+                  .then(res => res.json())
+                  .then(user => {
+                                    if (user.error) {
+                                                          window.location.href = '/';
+                                                          return;
+                                    }
+                                    document.getElementById('userInfo').innerHTML = `
+                                                        <span>${user.username}</span>
+                                                                            <img src="https://cdn.discordapp.com/avatars/${user.id}/${user.avatar}.png" alt="Avatar">
+                                                                                                <a href="/auth/logout" class="logout-btn">Logout</a>
+                                                                                                                `;
+                                    document.getElementById('userData').innerHTML = `
+                                                        <div class="profile-header">
+                                                                                <img src="https://cdn.discordapp.com/avatars/${user.id}/${user.avatar}.png" alt="Avatar">
+                                                                                                        <h2>Welcome, ${user.username}!</h2>
+                                                                                                                            </div>
+                                                                                                                                                <div class="profile-details">
+                                                                                                                                                                        <p><strong>ID:</strong> ${user.id}</p>
+                                                                                                                                                                                                <p><strong>Tag:</strong> ${user.username}#${user.discriminator}</p>
+                                                                                                                                                                                                                    </div>
+                                                                                                                                                                                                                                    `;
+                  });
+    </script>
+</body>
+</html>html>
+
+    </script></p></h1>
+    </main></li></li>
+                </nav>
+      </header>
+</body></title>
+  </head>
