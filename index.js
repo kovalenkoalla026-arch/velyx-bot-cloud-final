@@ -304,9 +304,9 @@ app.get('/servers', (req, res) => {
 });
 
 app.get('/panel', (req, res) => {
+    if (!req.session.token) return res.redirect('/');
     res.setHeader('Cache-Control', 'no-store, no-cache, must-revalidate, private');
-    res.setHeader('Content-Security-Policy', "default-src * 'unsafe-inline' 'unsafe-eval'; script-src * 'unsafe-inline' 'unsafe-eval'; style-src * 'unsafe-inline'; img-src * data: blob:; font-src *; connect-src *;");
-    res.sendFile(path.join(__dirname, 'public', 'panel-v4.html'));
+    res.sendFile('dashboard.html', { root: path.join(__dirname, 'public') });
 });
 
 app.get('/servers-page', (req, res) => {
