@@ -42,10 +42,7 @@
         <span style="font-weight: 600; font-size: 14px;">Velyx</span>
     </a>
 
-    <div class="lang-switcher">
-        <button class="lang-btn active" onclick="setLanguage('ru')" id="btn-ru">RU</button>
-        <button class="lang-btn" onclick="setLanguage('en')" id="btn-en">EN</button>
-    </div>
+    <!-- Language switcher removed -->
 
     <h1 id="page-title" style="display: none; align-items: center; justify-content: center; gap: 15px; margin-top: 20px;">
         <span data-i18n="select_server">Выберете</span> 
@@ -153,30 +150,18 @@
                 add: "Добавить",
                 manage: "Управлять",
                 developed_by: "Разработано Senk"
-            },
-            en: {
-                title: "Velyx | Servers",
-                select_server: "Select a",
-                server_word: "server",
-                loading: "Searching for your servers...",
-                no_servers: "You don't have any servers with Admin permissions",
-                error: "Load error",
-                add: "Add",
-                manage: "Manage",
-                developed_by: "Developed by Senk"
             }
         };
 
         function setLanguage(lang) {
-            localStorage.setItem('lang', lang);
+            const t = translations.ru;
             document.querySelectorAll('[data-i18n]').forEach(el => {
                 const key = el.getAttribute('data-i18n');
-                el.innerText = translations[lang][key];
+                el.innerText = t[key];
             });
-            document.title = translations[lang].title;
+            document.title = t.title;
             
-            document.getElementById('btn-ru').classList.toggle('active', lang === 'ru');
-            document.getElementById('btn-en').classList.toggle('active', lang === 'en');
+            // Language switcher buttons removed
 
             // Update footer credit if it exists
             const footer = document.querySelector('footer div');
