@@ -670,7 +670,10 @@
                 const res = await fetch(`/api/send-panel/${serverId}`, {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ channelId })
+                    body: JSON.stringify({ 
+                        channelId, 
+                        adminChannelId: adminId 
+                    })
                 });
                 if (res.ok) showToast('Панель отправлена!');
                 else alert('Ошибка при отправке');
