@@ -1545,16 +1545,28 @@ client.on('interactionCreate', async interaction => {
             adminChannel = client.channels.cache.get(config.adminChannelId) || await client.channels.fetch(config.adminChannelId).catch(() => null);
         }
 
+        // Fallback: search for a suitable channel if none configured or found
+        if (!adminChannel) {
+            const channels = await interaction.guild.channels.fetch();
+            adminChannel = channels.find(c => (c.name.toLowerCase() === 'applications' || c.name.toLowerCase() === 'заявки' || c.name.toLowerCase() === 'logs') && c.type === 0);
+            if (!adminChannel) adminChannel = channels.find(c => c.type === 0 && c.permissionsFor(client.user).has('SendMessages'));
+        }
+
         if (adminChannel) {
+          const perms = adminChannel.permissionsFor(client.user);
+          if (!perms.has('SendMessages') || !perms.has('ViewChannel')) {
+            return interaction.reply({ content: `❌ Ошибка: У бота нет прав на отправку сообщений в канал <#${adminChannel.id}>. Проверьте права «Просматривать канал» и «Отправлять сообщения».`, ephemeral: true });
+          }
+
           await adminChannel.send({ embeds: [embed], components: [row] });
-          await interaction.reply({ content: 'Ваша заявка успешно отправлена!', ephemeral: true });
+          await interaction.reply({ content: '✅ Ваша заявка успешно отправлена!', ephemeral: true });
         } else {
-          await interaction.reply({ content: '❌ Ошибка: Канал для получения заявок не настроен или бот не имеет к нему доступа. Пожалуйста, обратитесь к администратору.', ephemeral: true });
+          await interaction.reply({ content: '❌ Ошибка: Канал для получения заявок не настроен и бот не смог найти подходящий канал. Пожалуйста, укажите канал в панели управления.', ephemeral: true });
         }
       } catch (err) {
           console.error('Modal Submit Error:', err);
           if (!interaction.replied) {
-              await interaction.reply({ content: '❌ Произошла ошибка при обработке вашей заявки.', ephemeral: true });
+              await interaction.reply({ content: '❌ Произошла ошибка при обработке вашей заявки. Технические детали: ' + err.message, ephemeral: true });
           }
       }
     }
