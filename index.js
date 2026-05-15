@@ -432,17 +432,23 @@ app.get('/api/config/:guildId', checkAuth, async (req, res) => {
   const config = await getConfig(guildId);
   
   let guildData = null;
+  let channels = [];
   try {
       const guild = await client.guilds.fetch(guildId);
       guildData = {
           name: guild.name,
           icon: guild.iconURL({ dynamic: true, size: 128 }) || 'https://cdn.discordapp.com/embed/avatars/0.png'
       };
+
+      const fetchedChannels = await guild.channels.fetch();
+      channels = fetchedChannels
+        .filter(c => c.type === 0) // GuildText
+        .map(c => ({ id: c.id, name: c.name }));
   } catch (e) {
       console.error('Guild Fetch Error:', e.message);
   }
 
-  res.json({ ...config, guild: guildData });
+  res.json({ config, guild: guildData, channels });
 });
 
 app.get('/api/guild-structure/:guildId', checkAuth, async (req, res) => {
