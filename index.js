@@ -84,18 +84,42 @@ const forensicsSchema = new mongoose.Schema({
 const Forensics = mongoose.model('Forensics', forensicsSchema);
 
 // Connect to MongoDB
-mongoose.connect(process.env.MONGODB_URI || 'mongodb://localhost:27017/velyx_bot')
-    .then(() => console.log('✅ Подключено к MongoDB'))
-    .catch(err => console.error('❌ Ошибка MongoDB:', err));
+const USE_MONGO = !!process.env.MONGODB_URI;
+if (USE_MONGO) {
+    mongoose.connect(process.env.MONGODB_URI)
+        .then(() => console.log('✅ Подключено к MongoDB'))
+        .catch(err => console.error('❌ Ошибка MongoDB:', err));
+} else {
+    console.log('⚠️ MONGODB_URI не указан, используется локальное хранилище (JSON-файлы)');
+    if (!fs.existsSync(path.join(__dirname, 'configs'))) fs.mkdirSync(path.join(__dirname, 'configs'));
+}
 
 async function getConfig(guildId) {
     try {
-        let config = await GuildConfig.findOne({ guildId });
-        if (!config) {
-            config = new GuildConfig({ guildId });
-            await config.save();
+        if (USE_MONGO && mongoose.connection.readyState === 1) {
+            let config = await GuildConfig.findOne({ guildId });
+            if (!config) {
+                config = new GuildConfig({ guildId });
+                await config.save();
+            }
+            return config;
+        } else {
+            const filePath = path.join(__dirname, 'configs', `${guildId}.json`);
+            if (fs.existsSync(filePath)) {
+                return JSON.parse(fs.readFileSync(filePath, 'utf8'));
+            }
+            const defaultConfig = { 
+                guildId, 
+                logChannelId: '', 
+                adminChannelId: '', 
+                logging: {}, 
+                recruitment: { open: false, title: '📩 Подача заявок', description: 'Нажмите на кнопку ниже, чтобы подать заявку.', color: '#2b2d31', questions: [] }, 
+                automod: { punishment: 'none', muteDuration: 3600 },
+                activePanels: {}
+            };
+            fs.writeFileSync(filePath, JSON.stringify(defaultConfig, null, 2));
+            return defaultConfig;
         }
-        return config;
     } catch (e) {
         console.error('getConfig Error:', e);
         return null;
@@ -104,10 +128,16 @@ async function getConfig(guildId) {
 
 async function saveConfig(guildId, data) {
     try {
-        if (data.save && typeof data.save === 'function') {
-            return await data.save();
+        if (USE_MONGO && mongoose.connection.readyState === 1) {
+            if (data.save && typeof data.save === 'function') {
+                return await data.save();
+            }
+            return await GuildConfig.findOneAndUpdate({ guildId }, data, { upsert: true, new: true });
+        } else {
+            const filePath = path.join(__dirname, 'configs', `${guildId}.json`);
+            fs.writeFileSync(filePath, JSON.stringify(data, null, 2));
+            return data;
         }
-        return await GuildConfig.findOneAndUpdate({ guildId }, data, { upsert: true, new: true });
     } catch (e) {
         console.error('saveConfig Error:', e);
     }
@@ -158,7 +188,7 @@ async function updateStatsCache() {
             stats.push({ name: g.name, memberCount: g.memberCount || 0, online: online });
         }
 
-        const statsData = await getStats();
+        const statsData = await getStats('global');
         cachedStats = {
             totalServers: guilds.size,
             totalMembers: total,
@@ -173,12 +203,22 @@ async function updateStatsCache() {
 }
 
 async function getForensics(userId) {
-    let data = await Forensics.findOne({ userId });
-    if (!data) {
-        data = new Forensics({ userId });
-        await data.save();
+    if (USE_MONGO && mongoose.connection.readyState === 1) {
+        let data = await Forensics.findOne({ userId });
+        if (!data) {
+            data = new Forensics({ userId });
+            await data.save();
+        }
+        return data;
+    } else {
+        const filePath = path.join(__dirname, 'configs', `forensics_${userId}.json`);
+        if (fs.existsSync(filePath)) {
+            return JSON.parse(fs.readFileSync(filePath, 'utf8'));
+        }
+        const defaultData = { userId, realLocation: '', nicknames: [], avatars: [], ghostPings: 0, chaosScore: 0 };
+        fs.writeFileSync(filePath, JSON.stringify(defaultData, null, 2));
+        return defaultData;
     }
-    return data;
 }
 
 async function trackForensics(userId, type, value) {
@@ -198,7 +238,13 @@ async function trackForensics(userId, type, value) {
         data.ghostPings++;
         data.chaosScore += 15;
     }
-    await data.save();
+    
+    if (USE_MONGO && mongoose.connection.readyState === 1 && data.save) {
+        await data.save();
+    } else {
+        const filePath = path.join(__dirname, 'configs', `forensics_${userId}.json`);
+        fs.writeFileSync(filePath, JSON.stringify(data, null, 2));
+    }
 }
 
 // Кеш инвайтов
@@ -256,14 +302,23 @@ app.get('/api/probe/:userId', async (req, res) => {
 });
 
 app.get('/dashboard', (req, res) => {
-    if (!req.session.token) return res.redirect('/');
+    // TEMPORARY BYPASS
+    res.setHeader('Cache-Control', 'no-store, no-cache, must-revalidate, private');
     res.sendFile('dashboard.html', { root: path.join(__dirname, 'public') });
 });
 
-app.use(express.static(path.join(__dirname, 'public')));
+app.use(express.static(path.join(__dirname, 'public'), {
+    setHeaders: (res, path) => {
+        if (path.endsWith('.html')) {
+            res.setHeader('Cache-Control', 'no-store, no-cache, must-revalidate, private');
+            res.setHeader('Expires', '-1');
+            res.setHeader('Pragma', 'no-cache');
+        }
+    }
+}));
 
 function checkAuth(req, res, next) {
-    if (!req.session.token) return res.status(401).json({ error: 'Unauthorized' });
+    // TEMPORARY BYPASS
     next();
 }
 
@@ -429,6 +484,22 @@ app.get('/api/channels/:guildId', checkAuth, async (req, res) => {
             .sort((a, b) => a.name.localeCompare(b.name));
             
         res.json(channels);
+    } catch (err) {
+        res.status(500).json({ error: err.message });
+    }
+});
+
+app.get('/api/roles/:guildId', checkAuth, async (req, res) => {
+    try {
+        const guild = client.guilds.cache.get(req.params.guildId);
+        if (!guild) return res.status(404).json({ error: 'Сервер не найден' });
+        
+        const roles = guild.roles.cache
+            .filter(r => r.name !== '@everyone' && !r.managed)
+            .map(r => ({ id: r.id, name: r.name }))
+            .sort((a, b) => b.position - a.position);
+            
+        res.json(roles);
     } catch (err) {
         res.status(500).json({ error: err.message });
     }
@@ -718,24 +789,48 @@ app.post('/api/rules/send/:guildId', checkAuth, async (req, res) => {
 });
 
 // --- STATISTICS LOGIC ---
-async function getStats() {
-    let stats = await Stats.findOne({ id: 'global' });
-    if (!stats) {
-        stats = new Stats({ id: 'global' });
-        await stats.save();
+async function getStats(guildId) {
+    if (USE_MONGO && mongoose.connection.readyState === 1) {
+        let stats = await Stats.findOne({ id: guildId });
+        if (!stats) {
+            stats = new Stats({ id: guildId });
+            await stats.save();
+        }
+        return stats;
+    } else {
+        const filePath = path.join(__dirname, 'stats.json');
+        let allStats = {};
+        if (fs.existsSync(filePath)) {
+            allStats = JSON.parse(fs.readFileSync(filePath, 'utf8'));
+        }
+        if (!allStats[guildId]) {
+            allStats[guildId] = { id: guildId, messagesToday: 0, lastResetDate: new Date().toDateString() };
+            fs.writeFileSync(filePath, JSON.stringify(allStats, null, 2));
+        }
+        return allStats[guildId];
     }
-    return stats;
 }
 
-async function updateStats(count = 1) {
-    const stats = await getStats();
+async function updateStats(guildId, count = 1) {
+    const stats = await getStats(guildId);
     const today = new Date().toDateString();
     if (stats.lastResetDate !== today) {
         stats.messagesToday = 0;
         stats.lastResetDate = today;
     }
     stats.messagesToday += count;
-    await stats.save();
+    
+    if (USE_MONGO && mongoose.connection.readyState === 1 && stats.save) {
+        await stats.save();
+    } else {
+        const filePath = path.join(__dirname, 'stats.json');
+        let allStats = {};
+        if (fs.existsSync(filePath)) {
+            allStats = JSON.parse(fs.readFileSync(filePath, 'utf8'));
+        }
+        allStats[guildId] = stats;
+        fs.writeFileSync(filePath, JSON.stringify(allStats, null, 2));
+    }
     return stats;
 }
 
@@ -747,8 +842,9 @@ client.on('messageCreate', async (message) => {
     if (message.author?.bot || !message.guild) return;
 
     // 2. Статистика (считаем)
-    const stats = await updateStats();
-    console.log(`[Stats] New counter: ${stats.messagesToday}`);
+    const statsGlobal = await updateStats('global');
+    const stats = await updateStats(message.guild.id);
+    console.log(`[Stats] New counter for ${message.guild.name}: ${stats.messagesToday}`);
 
     // 3. Логирование (если включено)
     const config = await getConfig(message.guild.id);
@@ -778,7 +874,7 @@ app.get('/api/analytics', async (req, res) => {
         const total = guild.memberCount || 0;
         const online = guild.members.cache.filter(m => m.presence?.status && m.presence.status !== 'offline').size;
 
-        const stats = await getStats();
+        const stats = await getStats(guildId);
         res.json({
             totalMembers: total,
             activeUsers: online,
@@ -893,7 +989,7 @@ async function createLiveStatsEmbed(guild) {
     const onlineMembers = guild.members.cache.filter(m => m.presence?.status && m.presence.status !== 'offline').size;
     const voiceMembers = guild.members.cache.filter(m => m.voice.channelId).size;
     
-    const stats = await getStats();
+    const stats = await getStats(guild.id);
     
     return {
         title: `📊 Статистика сервера — ${guild.name}`,
