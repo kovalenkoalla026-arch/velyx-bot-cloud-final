@@ -1322,7 +1322,7 @@ client.on('interactionCreate', async interaction => {
             panelId = 'global';
         } else {
             panelId = interaction.customId.replace('apply_modal_', '');
-            panelConfig = config.activePanels && config.activePanels[panelId];
+            panelConfig = config.activePanels && (config.activePanels.get ? config.activePanels.get(panelId) : config.activePanels[panelId]);
         }
         
         if (!panelConfig || !panelConfig.questions || panelConfig.questions.length === 0) {
