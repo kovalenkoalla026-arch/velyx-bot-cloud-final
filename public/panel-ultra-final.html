@@ -555,6 +555,12 @@
             config.recruitment.channelId = document.getElementById('recChannelId').value;
             config.adminChannelId = document.getElementById('recAdminChannelId').value;
 
+            // Validation
+            if (!config.recruitment.title.trim()) { alert('Ошибка: Заголовок анкеты не может быть пустым!'); btn.innerText = '💾 Сохранить настройки'; return; }
+            if (!config.recruitment.description.trim()) { alert('Ошибка: Описание анкеты не может быть пустым!'); btn.innerText = '💾 Сохранить настройки'; return; }
+            if (!config.adminChannelId) { alert('Ошибка: Выберите канал для получения заявок!'); btn.innerText = '💾 Сохранить настройки'; return; }
+            if (config.recruitment.questions.length === 0) { alert('Ошибка: Добавьте хотя бы один вопрос в анкету!'); btn.innerText = '💾 Сохранить настройки'; return; }
+
             try {
                 await fetch(`/api/config/${serverId}`, {
                     method: 'POST',
@@ -650,7 +656,12 @@
 
         async function sendRecruitmentPanel() {
             const channelId = document.getElementById('recChannelId').value;
-            if (!channelId) return alert('Выберите канал!');
+            const adminId = document.getElementById('recAdminChannelId').value;
+            const title = document.getElementById('recTitle').value;
+
+            if (!channelId) return alert('Ошибка: Выберите канал для отправки ПАНЕЛИ!');
+            if (!adminId) return alert('Ошибка: Сначала выберите канал для получения ЗАЯВОК и сохраните настройки!');
+            if (!title.trim()) return alert('Ошибка: Заголовок анкеты пуст!');
             
             const btn = document.querySelector('.btn-primary[onclick="sendRecruitmentPanel()"]');
             btn.innerText = '⌛ Отправка...';
