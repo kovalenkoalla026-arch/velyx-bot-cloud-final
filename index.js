@@ -18,6 +18,8 @@ const session = require('express-session');
 const MongoStore = require('connect-mongo');
 const mongoose = require('mongoose');
 const bodyParser = require('body-parser');
+const path = require('path');
+const cors = require('cors');
 const cors = require('cors');
 const fs = require('fs');
 
