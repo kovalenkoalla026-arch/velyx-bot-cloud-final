@@ -201,6 +201,11 @@
             <span>Velyx</span>
         </div>
 
+        <div id="currentServer" style="display: flex; padding: 12px; background: rgba(255,255,255,0.03); border-radius: 12px; margin: 15px 0; border: 1px solid rgba(255,255,255,0.05); align-items: center; gap: 10px;">
+            <img id="serverIcon" src="" style="width: 32px; height: 32px; border-radius: 8px; background: #2b2d31;">
+            <span id="serverName" style="font-size: 13px; font-weight: 600; color: #fff; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">Загрузка...</span>
+        </div>
+
         <div class="back-link">
             <a href="/servers-page">
                 <span data-i18n="back_to_servers">← К списку серверов</span>
@@ -451,6 +456,12 @@
                 const res = await fetch(`/api/config/${serverId}`);
                 const data = await res.json();
                 config = data.config || config;
+
+                // Update server info
+                if (data.guild) {
+                    document.getElementById('serverName').innerText = data.guild.name;
+                    document.getElementById('serverIcon').src = data.guild.icon;
+                }
                 
                 // Populate channels
                 const selects = ['rulesChannelId', 'logChannelId', 'recChannelId', 'recAdminChannelId'];
