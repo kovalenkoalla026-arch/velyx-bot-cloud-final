@@ -334,8 +334,12 @@
                             <textarea id="recDesc" rows="4" oninput="markUnsaved(); updatePreview()"></textarea>
                         </div>
                         <div class="form-group" style="margin-top: 20px; border-top: 1px solid rgba(255,255,255,0.05); padding-top: 20px;">
-                            <label>Канал для отправки панели</label>
+                            <label>Канал для отправки ПАНЕЛИ (где будет кнопка)</label>
                             <select id="recChannelId"></select>
+                        </div>
+                        <div class="form-group">
+                            <label>Канал для получения ЗАЯВОК (куда придут анкеты)</label>
+                            <select id="recAdminChannelId"></select>
                         </div>
                         <button class="btn btn-primary" onclick="sendRecruitmentPanel()" style="width: 100%;">🚀 Отправить панель в канал</button>
                     </div>
@@ -449,7 +453,7 @@
                 config = data.config || config;
                 
                 // Populate channels
-                const selects = ['rulesChannelId', 'logChannelId', 'recChannelId'];
+                const selects = ['rulesChannelId', 'logChannelId', 'recChannelId', 'recAdminChannelId'];
                 selects.forEach(id => {
                     const el = document.getElementById(id);
                     if (el) el.innerHTML = (data.channels || []).map(c => `<option value="${c.id}"># ${c.name}</option>`).join('');
@@ -470,6 +474,7 @@
                 document.getElementById('recTitle').value = config.recruitment?.title || '';
                 document.getElementById('recDesc').value = config.recruitment?.description || '';
                 document.getElementById('recChannelId').value = config.recruitment?.channelId || '';
+                document.getElementById('recAdminChannelId').value = config.adminChannelId || '';
 
                 renderQuestions();
                 renderRuleBlocks();
@@ -537,6 +542,7 @@
             config.recruitment.title = document.getElementById('recTitle').value;
             config.recruitment.description = document.getElementById('recDesc').value;
             config.recruitment.channelId = document.getElementById('recChannelId').value;
+            config.adminChannelId = document.getElementById('recAdminChannelId').value;
 
             try {
                 await fetch(`/api/config/${serverId}`, {
