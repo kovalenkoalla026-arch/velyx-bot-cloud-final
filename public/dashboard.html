@@ -1368,7 +1368,7 @@
                 }
 
                 await loadChannels();
-                updateForm();
+                await updateForm();
             } catch (err) {
                 console.error('Критическая ошибка загрузки:', err);
                 showToast('Ошибка загрузки данных');
@@ -1406,7 +1406,7 @@
             } catch(e) {}
         }
 
-        function updateForm() {
+        async function updateForm() {
             if (!currentConfig || !currentConfig.logging) return;
             
             document.getElementById('logChannelId').value = currentConfig.logChannelId || '';
@@ -1428,7 +1428,7 @@
             document.getElementById('recApproveRole').value = currentConfig.recruitment.approvalRole || '';
             
             // Trigger role loading
-            loadRoles();
+            await loadRoles();
 
             if (currentConfig.automod) {
                 document.getElementById('modAntiInvite').checked = !!currentConfig.automod.antiInvite;
@@ -1446,8 +1446,11 @@
             renderQuestions();
             updateRecruitmentPreview();
             
-            // Reset originalConfig baseline AFTER form is filled so no false "unsaved changes" appears
+            // Run checkChanges once to let it pull any DOM-specific default values (like missing select options turning into "") into currentConfig
+            checkChanges();
+            // Reset originalConfig baseline AFTER form is completely processed
             originalConfig = JSON.parse(JSON.stringify(currentConfig));
+            // Run checkChanges again to hide the banner
             checkChanges();
         }
 
@@ -1572,11 +1575,21 @@
             }
 
             // Comparison
-            if (currentConfig.logChannelId !== originalConfig.logChannelId) isChanged = true;
-            if (currentConfig.adminChannelId !== originalConfig.adminChannelId) isChanged = true;
-            if (JSON.stringify(currentConfig.logging) !== JSON.stringify(originalConfig.logging)) isChanged = true;
-            if (JSON.stringify(currentConfig.recruitment) !== JSON.stringify(originalConfig.recruitment)) isChanged = true;
-            if (JSON.stringify(currentConfig.automod) !== JSON.stringify(originalConfig.automod)) isChanged = true;
+            let diffs = [];
+            if (currentConfig.logChannelId !== originalConfig.logChannelId) diffs.push('logChannel');
+            if (currentConfig.adminChannelId !== originalConfig.adminChannelId) diffs.push('adminChannel');
+            if (JSON.stringify(currentConfig.logging) !== JSON.stringify(originalConfig.logging)) diffs.push('logging');
+            if (JSON.stringify(currentConfig.recruitment) !== JSON.stringify(originalConfig.recruitment)) diffs.push('recruitment');
+            if (JSON.stringify(currentConfig.automod) !== JSON.stringify(originalConfig.automod)) diffs.push('automod');
+
+            isChanged = diffs.length > 0;
+            
+            const warnSpan = document.querySelector('#saveBar span');
+            if (isChanged && warnSpan) {
+                const lang = localStorage.getItem('lang') || 'ru';
+                const baseText = lang === 'en' ? 'Attention: you have unsaved changes!' : 'Внимание: у вас есть несохраненные изменения!';
+                warnSpan.innerText = `${baseText} [Debug: ${diffs.join(', ')}]`;
+            }
 
             document.getElementById('saveBar').classList.toggle('visible', isChanged);
         }
@@ -1587,9 +1600,7 @@
         });
 
         function resetForm() {
-            currentConfig = JSON.parse(JSON.stringify(originalConfig));
-            updateForm();
-            checkChanges();
+            window.location.reload(true);
         }
 
         async function saveSettings() {
