@@ -708,6 +708,11 @@ app.post('/api/send-panel/:guildId', checkAuth, async (req, res) => {
     const channel = await client.channels.fetch(req.body.channelId);
     if (!channel || channel.guildId !== guildId) return res.status(404).json({ error: 'Канал не найден или не принадлежит серверу' });
 
+    // Ensure admin channel is updated if provided
+    if (req.body.adminChannelId) {
+        config.adminChannelId = req.body.adminChannelId;
+    }
+
     const panelId = Date.now().toString();
     
     // Save snapshot of this panel's questions
@@ -1423,10 +1428,10 @@ client.on('interactionCreate', async interaction => {
             
             // Discord supports max 5 fields in a modal
             const questions = panelConfig.questions.slice(0, 5);
-            const rows = questions.map(q => {
+            const rows = questions.map((q, index) => {
                 let safeLabel = (q.label || 'Вопрос').length > 45 ? (q.label || 'Вопрос').substring(0, 42) + '...' : (q.label || 'Вопрос');
                 const input = new TextInputBuilder()
-                    .setCustomId(q.id || `q_${Math.random()}`)
+                    .setCustomId(`q_${index}`) // Use index for stability
                     .setLabel(safeLabel)
                     .setStyle(q.style === 'short' ? TextInputStyle.Short : TextInputStyle.Paragraph)
                     .setRequired(true);
@@ -1438,7 +1443,7 @@ client.on('interactionCreate', async interaction => {
         } catch (e) {
             console.error('Modal Interaction Error:', e);
             if (!interaction.replied && !interaction.deferred) {
-                await interaction.reply({ content: '❌ Ошибка при открытии анкеты. Возможно, настроено слишком много вопросов (макс. 5).', ephemeral: true });
+                await interaction.reply({ content: '❌ Ошибка при открытии анкеты. Попробуйте еще раз или свяжитесь с администратором.', ephemeral: true });
             }
         }
       }
@@ -1520,11 +1525,13 @@ client.on('interactionCreate', async interaction => {
           .addFields({ name: '👤 Пользователь', value: `${user.tag} (<@${user.id}>)`, inline: false });
   
         if (panelConfig.questions) {
-            panelConfig.questions.forEach(q => {
+            panelConfig.questions.slice(0, 5).forEach((q, index) => {
                 try {
-                    const answer = interaction.fields.getTextInputValue(q.id);
-                    embed.addFields({ name: `📝 ${q.label}`, value: answer || '*Пусто*', inline: false });
-                } catch(e) {}
+                    const answer = interaction.fields.getTextInputValue(`q_${index}`);
+                    embed.addFields({ name: `📝 ${q.label || 'Вопрос'}`, value: answer || '*Пусто*', inline: false });
+                } catch(e) {
+                    console.error(`Field q_${index} not found in submission`);
+                }
             });
         }
   
