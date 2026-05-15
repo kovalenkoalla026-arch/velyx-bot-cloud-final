@@ -3,30 +3,419 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Velyx | Dashboard</title>
+    <meta http-equiv="Content-Security-Policy" content="default-src * 'unsafe-inline' 'unsafe-eval'; script-src * 'unsafe-inline' 'unsafe-eval'; style-src * 'unsafe-inline'; img-src * data: blob:; font-src *; connect-src *;">
+    <title>Velyx | Панель управления</title>
+    <link rel="icon" type="image/png" href="/logo.png">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600;800&display=swap" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <style>
-        body { font-family: sans-serif; background: #0f1012; color: #fff; padding: 50px; text-align: center; }
-        .card { background: #16181a; padding: 40px; border-radius: 20px; display: inline-block; border: 1px solid #5865f2; }
-        h1 { color: #5865f2; margin-bottom: 20px; }
-        .nav { margin-top: 30px; display: flex; gap: 10px; justify-content: center; }
-        .btn { padding: 10px 20px; background: #5865f2; color: #fff; text-decoration: none; border-radius: 8px; }
+        :root {
+            --bg: #0f1012;
+            --card: #16181a;
+            --accent: #5865f2;
+            --accent-hover: #4752c4;
+            --text: #ffffff;
+            --text-dim: #b5bac1;
+            --danger: #ed4245;
+            --success: #3ba55c;
+            --transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+        body {
+            font-family: 'Outfit', sans-serif;
+            background: var(--bg);
+            color: var(--text);
+            display: flex;
+            min-height: 100vh;
+            overflow-x: hidden;
+        }
+
+        /* Sidebar */
+        .sidebar {
+            width: 280px;
+            background: #090a0b;
+            border-right: 1px solid rgba(255,255,255,0.05);
+            display: flex;
+            flex-direction: column;
+            padding: 30px 0;
+            flex-shrink: 0;
+            height: 100vh;
+            position: sticky;
+            top: 0;
+        }
+
+        .logo {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            padding: 0 25px 40px 25px;
+            font-size: 22px;
+            font-weight: 800;
+            color: var(--text);
+            letter-spacing: -0.5px;
+        }
+
+        .logo img { width: 32px; height: 32px; border-radius: 50%; }
+
+        .nav-item {
+            padding: 14px 25px;
+            margin: 4px 15px;
+            border-radius: 12px;
+            cursor: pointer;
+            transition: var(--transition);
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            color: var(--text-dim);
+            font-weight: 500;
+        }
+
+        .nav-item:hover { background: rgba(255,255,255,0.03); color: var(--text); }
+        .nav-item.active { background: rgba(88, 101, 242, 0.1); color: var(--accent); }
+
+        /* Main Content */
+        .main-content {
+            flex: 1;
+            padding: 50px;
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        h1 { font-size: 36px; font-weight: 800; margin-bottom: 40px; letter-spacing: -1px; }
+
+        .card {
+            background: var(--card);
+            border-radius: 24px;
+            padding: 30px;
+            margin-bottom: 30px;
+            border: 1px solid rgba(255,255,255,0.03);
+            box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+            transition: var(--transition);
+        }
+
+        .card:hover { transform: translateY(-5px); border-color: rgba(88, 101, 242, 0.2); }
+
+        .card-header { font-size: 18px; font-weight: 700; margin-bottom: 25px; display: flex; align-items: center; gap: 10px; }
+
+        .form-group { margin-bottom: 20px; }
+        label { display: block; margin-bottom: 10px; font-size: 14px; color: var(--text-dim); font-weight: 600; }
+
+        select, input, textarea {
+            width: 100%; background: #090a0b; border: 1px solid rgba(255,255,255,0.08);
+            border-radius: 12px; padding: 14px 18px; color: var(--text); font-family: inherit; font-size: 15px; transition: var(--transition);
+        }
+
+        select:focus, input:focus, textarea:focus { outline: none; border-color: var(--accent); background: #111214; }
+
+        .btn {
+            padding: 14px 28px; border-radius: 14px; border: none; font-weight: 700; cursor: pointer;
+            transition: var(--transition); font-family: inherit; display: inline-flex; align-items: center; gap: 10px;
+        }
+
+        .btn-primary { background: var(--accent); color: white; }
+        .btn-primary:hover { background: var(--accent-hover); transform: scale(1.02); }
+
+        .btn-ghost { background: rgba(255,255,255,0.05); color: var(--text); }
+        .btn-ghost:hover { background: rgba(255,255,255,0.1); }
+
+        /* Switches */
+        .setting-item {
+            display: flex; justify-content: space-between; align-items: center; padding: 15px 0; border-bottom: 1px solid rgba(255,255,255,0.03);
+        }
+
+        .switch { position: relative; display: inline-block; width: 50px; height: 26px; }
+        .switch input { opacity: 0; width: 0; height: 0; }
+        .slider {
+            position: absolute; cursor: pointer; top: 0; left: 0; right: 0; bottom: 0;
+            background-color: #2f3136; transition: .4s; border-radius: 34px;
+        }
+        .slider:before {
+            position: absolute; content: ""; height: 20px; width: 20px; left: 3px; bottom: 3px;
+            background-color: white; transition: .4s; border-radius: 50%;
+        }
+        input:checked + .slider { background-color: var(--accent); }
+        input:checked + .slider:before { transform: translateX(24px); }
+
+        .content-section { display: none; }
+        .content-section.active { display: block; animation: fadeIn 0.4s ease-out; }
+
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+
+        #toast {
+            position: fixed; top: 30px; left: 50%; transform: translateX(-50%) translateY(-100px);
+            background: var(--success); padding: 12px 30px; border-radius: 50px;
+            color: white; font-weight: 600; z-index: 9999; transition: var(--transition);
+        }
+        #toast.show { transform: translateX(-50%) translateY(0); }
+
+        .save-bar {
+            position: fixed; bottom: 30px; left: 310px; right: 50px;
+            background: rgba(22, 24, 26, 0.95); backdrop-filter: blur(20px);
+            padding: 15px 30px; border-radius: 20px; border: 1px solid rgba(88, 101, 242, 0.3);
+            display: flex; justify-content: space-between; align-items: center;
+            transform: translateY(150px); transition: var(--transition); z-index: 1000;
+        }
+        .save-bar.visible { transform: translateY(0); }
+
+        .lang-switcher { display: flex; gap: 8px; margin-bottom: 25px; padding: 0 25px; }
+        .lang-btn {
+            background: rgba(255,255,255,0.05); border: none; padding: 6px 12px;
+            border-radius: 8px; color: var(--text-dim); cursor: pointer; font-size: 12px; font-weight: 700;
+        }
+        .lang-btn.active { background: var(--accent); color: white; }
+
+        .server-profile { display: flex; align-items: center; gap: 15px; padding: 0 25px 30px 25px; }
+        #serverIcon { width: 45px; height: 45px; border-radius: 12px; }
+        #serverName { font-weight: 700; font-size: 16px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+
+        @media (max-width: 992px) {
+            .sidebar { transform: translateX(-100%); position: fixed; z-index: 2000; transition: var(--transition); }
+            .sidebar.open { transform: translateX(0); }
+            .main-content { padding: 30px 20px; }
+            .save-bar { left: 20px; right: 20px; }
+        }
     </style>
 </head>
 <body>
-    <div class="card">
-        <h1>Velyx Dashboard (Ultra Final)</h1>
-        <p>Панель управления успешно загружена без робота!</p>
-        <div id="status">Загрузка данных сервера...</div>
-        <div class="nav">
-            <a href="#" class="btn" onclick="alert('Раздел в разработке')">Правила</a>
-            <a href="#" class="btn" onclick="alert('Раздел в разработке')">Аналитика</a>
+    <div id="toast">Настройки сохранены!</div>
+
+    <div class="sidebar">
+        <div class="logo">
+            <img src="/logo.png" alt="Velyx">
+            <span>Velyx</span>
+        </div>
+        
+        <div class="lang-switcher">
+            <button class="lang-btn active" onclick="setLanguage('ru')" id="btn-ru">RU</button>
+            <button class="lang-btn" onclick="setLanguage('en')" id="btn-en">EN</button>
+        </div>
+
+        <div class="server-profile">
+            <img id="serverIcon" src="https://cdn.discordapp.com/embed/avatars/0.png">
+            <div id="serverName">Загрузка...</div>
+        </div>
+
+        <div class="nav-item active" data-target="analytics">📊 <span data-i18n="nav_analytics">Аналитика</span></div>
+        <div class="nav-item" data-target="rules">📜 <span data-i18n="nav_rules">Правила</span></div>
+        <div class="nav-item" data-target="automod">🛡️ <span data-i18n="nav_automod">Авто-мод</span></div>
+        <div class="nav-item" data-target="logs">📝 <span data-i18n="nav_logs">Логи сервера</span></div>
+        <div class="nav-item" data-target="recruitment">📩 <span data-i18n="nav_apps">Заявки</span></div>
+        <div class="nav-item" data-target="setup" style="margin-top: auto;">🛠️ <span data-i18n="nav_structure">Структура</span></div>
+    </div>
+
+    <div class="main-content">
+        <div id="analytics" class="content-section active">
+            <h1 data-i18n="nav_analytics">Аналитика</h1>
+            <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 20px; margin-bottom: 30px;">
+                <div class="card" style="margin-bottom: 0;">
+                    <label data-i18n="stat_total">Всего участников</label>
+                    <div id="statTotalMembers" style="font-size: 32px; font-weight: 800; color: var(--accent);">0</div>
+                </div>
+                <div class="card" style="margin-bottom: 0;">
+                    <label data-i18n="stat_active_today">Активность (24ч)</label>
+                    <div id="statActiveUsers" style="font-size: 32px; font-weight: 800; color: var(--success);">0</div>
+                </div>
+                <div class="card" style="margin-bottom: 0;">
+                    <label data-i18n="stat_messages">Сообщений сегодня</label>
+                    <div id="statMessagesToday" style="font-size: 32px; font-weight: 800; color: #ffcc00;">0</div>
+                </div>
+            </div>
+            <div class="card">
+                <div class="card-header">📈 График активности</div>
+                <canvas id="activityChart" height="100"></canvas>
+            </div>
+        </div>
+
+        <div id="rules" class="content-section">
+            <h1 data-i18n="nav_rules">Управление правилами</h1>
+            <div class="card">
+                <div class="form-group">
+                    <label data-i18n="label_target_channel">Выберите канал для отправки</label>
+                    <select id="rulesChannelId">
+                        <option value="">-- Загрузка каналов... --</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label>Заголовок правил</label>
+                    <input type="text" id="rulesTitle" placeholder="Напр. Правила нашего сервера">
+                </div>
+                <div class="form-group">
+                    <label>Текст правил (Markdown поддерживается)</label>
+                    <textarea id="rulesContent" rows="10" placeholder="Введите текст правил здесь..."></textarea>
+                </div>
+                <button class="btn btn-primary" onclick="sendRules()" data-i18n="btn_publish">🚀 Опубликовать правила</button>
+            </div>
+        </div>
+
+        <div id="automod" class="content-section">
+            <h1 data-i18n="nav_automod">Автоматическая модерация</h1>
+            <div class="card">
+                <div class="setting-item">
+                    <div>
+                        <div style="font-weight: 600;" data-i18n="label_invites">Фильтр приглашений</div>
+                        <div style="font-size: 12px; color: var(--text-dim);" data-i18n="desc_invites">Удаляет ссылки на чужие серверы</div>
+                    </div>
+                    <label class="switch"><input type="checkbox" id="modAntiInvite" onchange="markUnsaved()"><span class="slider"></span></label>
+                </div>
+                <div class="setting-item">
+                    <div>
+                        <div style="font-weight: 600;" data-i18n="label_all_links">Все ссылки</div>
+                        <div style="font-size: 12px; color: var(--text-dim);" data-i18n="desc_all_links">Удаляет любые ссылки из чата</div>
+                    </div>
+                    <label class="switch"><input type="checkbox" id="modAntiLink" onchange="markUnsaved()"><span class="slider"></span></label>
+                </div>
+            </div>
         </div>
     </div>
+
+    <div class="save-bar" id="saveBar">
+        <span data-i18n="changes_warning">У вас есть несохраненные изменения!</span>
+        <div style="display: flex; gap: 10px;">
+            <button class="btn btn-ghost" onclick="resetForm()" data-i18n="btn_reset">Сбросить</button>
+            <button class="btn btn-primary" onclick="saveSettings()" data-i18n="btn_save">Сохранить</button>
+        </div>
+    </div>
+
     <script>
-        const serverId = new URLSearchParams(window.location.search).get('server');
-        if (serverId) {
-            document.getElementById('status').innerText = 'Управление сервером: ' + serverId;
+        const translations = {
+            ru: {
+                title: "Velyx | Панель управления",
+                nav_analytics: "Аналитика",
+                nav_rules: "Правила",
+                nav_automod: "Авто-мод",
+                nav_logs: "Логи сервера",
+                nav_apps: "Заявки",
+                nav_structure: "Структура",
+                stat_total: "Всего участников",
+                stat_active_today: "Активность (24ч)",
+                stat_messages: "Сообщений сегодня",
+                btn_publish: "Опубликовать",
+                btn_save: "Сохранить",
+                btn_reset: "Сбросить",
+                changes_warning: "Есть несохраненные изменения!",
+                label_target_channel: "Канал для отправки",
+                label_invites: "Фильтр инвайтов",
+                desc_invites: "Удаляет ссылки на чужие серверы",
+                label_all_links: "Защита от ссылок",
+                desc_all_links: "Удаляет любые ссылки из чата"
+            },
+            en: {
+                title: "Velyx | Dashboard",
+                nav_analytics: "Analytics",
+                nav_rules: "Rules",
+                nav_automod: "Auto-mod",
+                nav_logs: "Server Logs",
+                nav_apps: "Applications",
+                nav_structure: "Structure",
+                stat_total: "Total Members",
+                stat_active_today: "Active Today",
+                stat_messages: "Messages Today",
+                btn_publish: "Publish",
+                btn_save: "Save",
+                btn_reset: "Reset",
+                changes_warning: "You have unsaved changes!",
+                label_target_channel: "Target Channel",
+                label_invites: "Invite Filter",
+                desc_invites: "Removes invites to other servers",
+                label_all_links: "Link Protection",
+                desc_all_links: "Removes any links from chat"
+            }
+        };
+
+        let currentLang = localStorage.getItem('lang') || 'ru';
+        let hasChanges = false;
+        
+        function setLanguage(lang) {
+            currentLang = lang;
+            localStorage.setItem('lang', lang);
+            const t = translations[lang];
+            document.querySelectorAll('[data-i18n]').forEach(el => {
+                const key = el.getAttribute('data-i18n');
+                if (t[key]) el.innerText = t[key];
+            });
+            document.title = t.title;
+            document.getElementById('btn-ru').classList.toggle('active', lang === 'ru');
+            document.getElementById('btn-en').classList.toggle('active', lang === 'en');
         }
+
+        function markUnsaved() {
+            hasChanges = true;
+            document.getElementById('saveBar').classList.add('visible');
+        }
+
+        function showToast(msg) {
+            const toast = document.getElementById('toast');
+            toast.innerText = msg;
+            toast.classList.add('show');
+            setTimeout(() => toast.classList.remove('show'), 3000);
+        }
+
+        // Navigation
+        document.querySelectorAll('.nav-item').forEach(item => {
+            item.addEventListener('click', () => {
+                const target = item.getAttribute('data-target');
+                document.querySelectorAll('.nav-item').forEach(i => i.classList.remove('active'));
+                document.querySelectorAll('.content-section').forEach(s => s.classList.remove('active'));
+                item.classList.add('active');
+                document.getElementById(target).classList.add('active');
+            });
+        });
+
+        const serverId = new URLSearchParams(window.location.search).get('server');
+        if (!serverId) window.location.href = '/servers-page';
+
+        async function loadData() {
+            try {
+                const res = await fetch(`/api/config/${serverId}`);
+                const data = await res.json();
+                if (data.guild) {
+                    document.getElementById('serverName').innerText = data.guild.name;
+                    document.getElementById('serverIcon').src = data.guild.icon || 'https://cdn.discordapp.com/embed/avatars/0.png';
+                    document.getElementById('statTotalMembers').innerText = data.guild.memberCount || 0;
+                }
+                
+                // Populate channels
+                const channelSelect = document.getElementById('rulesChannelId');
+                if (data.channels && data.channels.length > 0) {
+                    channelSelect.innerHTML = data.channels.map(c => `<option value="${c.id}"># ${c.name}</option>`).join('');
+                } else {
+                    channelSelect.innerHTML = '<option value="">Нет доступных каналов</option>';
+                }
+
+                // Load existing settings
+                if (data.config) {
+                    document.getElementById('modAntiInvite').checked = data.config.automod?.antiInvite || false;
+                    document.getElementById('modAntiLink').checked = data.config.automod?.antiLink || false;
+                }
+            } catch (e) { console.error('Load error:', e); }
+        }
+
+        async function saveSettings() {
+            try {
+                const config = {
+                    automod: {
+                        antiInvite: document.getElementById('modAntiInvite').checked,
+                        antiLink: document.getElementById('modAntiLink').checked
+                    }
+                };
+                const res = await fetch(`/api/config/${serverId}`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(config)
+                });
+                if (res.ok) {
+                    showToast('Настройки успешно сохранены!');
+                    hasChanges = false;
+                    document.getElementById('saveBar').classList.remove('visible');
+                }
+            } catch (e) { showToast('Ошибка при сохранении!'); }
+        }
+
+        setLanguage(currentLang);
+        loadData();
     </script>
 </body>
 </html>
