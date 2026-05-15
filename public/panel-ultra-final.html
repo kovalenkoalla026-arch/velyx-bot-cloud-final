@@ -1,0 +1,32 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Velyx | Dashboard</title>
+    <style>
+        body { font-family: sans-serif; background: #0f1012; color: #fff; padding: 50px; text-align: center; }
+        .card { background: #16181a; padding: 40px; border-radius: 20px; display: inline-block; border: 1px solid #5865f2; }
+        h1 { color: #5865f2; margin-bottom: 20px; }
+        .nav { margin-top: 30px; display: flex; gap: 10px; justify-content: center; }
+        .btn { padding: 10px 20px; background: #5865f2; color: #fff; text-decoration: none; border-radius: 8px; }
+    </style>
+</head>
+<body>
+    <div class="card">
+        <h1>Velyx Dashboard (Ultra Final)</h1>
+        <p>Панель управления успешно загружена без робота!</p>
+        <div id="status">Загрузка данных сервера...</div>
+        <div class="nav">
+            <a href="#" class="btn" onclick="alert('Раздел в разработке')">Правила</a>
+            <a href="#" class="btn" onclick="alert('Раздел в разработке')">Аналитика</a>
+        </div>
+    </div>
+    <script>
+        const serverId = new URLSearchParams(window.location.search).get('server');
+        if (serverId) {
+            document.getElementById('status').innerText = 'Управление сервером: ' + serverId;
+        }
+    </script>
+</body>
+</html>
