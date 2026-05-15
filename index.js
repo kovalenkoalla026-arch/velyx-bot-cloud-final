@@ -22,6 +22,7 @@ const path = require('path');
 const cors = require('cors');
 const fs = require('fs');
 
+const PORT = process.env.PORT || 3000;
 const CLIENT_ID = process.env.CLIENT_ID;
 const CLIENT_SECRET = process.env.CLIENT_SECRET;
 const REDIRECT_URI = process.env.REDIRECT_URI || `http://localhost:${PORT}/api/auth/callback`;
@@ -255,10 +256,9 @@ const guildInvites = new Map();
 
 // Обновляем каждые 30 секунд
 setInterval(updateStatsCache, 30000);
-setInterval(updateStatsCache, 30000);
 
 const app = express();
-const PORT = process.env.PORT || 3000;
+
 
 app.use((req, res, next) => {
     res.setHeader('Cache-Control', 'no-store, no-cache, must-revalidate, private');
