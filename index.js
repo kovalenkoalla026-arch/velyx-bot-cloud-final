@@ -16,6 +16,7 @@ const {
 const express = require('express');
 const session = require('express-session');
 const mongoose = require('mongoose');
+const MongoStore = require('connect-mongo');
 const bodyParser = require('body-parser');
 const path = require('path');
 const cors = require('cors');
@@ -257,6 +258,7 @@ const guildInvites = new Map();
 setInterval(updateStatsCache, 30000);
 
 const app = express();
+app.set('trust proxy', 1); // Trust first proxy (Railway)
 
 
 app.use((req, res, next) => {
@@ -275,6 +277,11 @@ app.use(session({
     secret: process.env.SESSION_SECRET || 'velyx-secret-key-123',
     resave: false,
     saveUninitialized: false,
+    store: MongoStore.create({
+        mongoUrl: process.env.MONGODB_URI,
+        collectionName: 'sessions',
+        ttl: 14 * 24 * 60 * 60 // 14 days
+    }),
     cookie: { 
         secure: true, 
         httpOnly: true, 
