@@ -9,6 +9,242 @@
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600;800&display=swap" rel="stylesheet">
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script>
+        // Pre-define translations and setLanguage in head to avoid ReferenceErrors
+        const translations = {
+            ru: {
+                title: "Velyx | Панель управления",
+                back_to_servers: "← К списку серверов",
+                nav_rules: "📜 Правила",
+                nav_automod: "🛡️ Авто-мод",
+                nav_logs: "📝 Логи сервера",
+                nav_apps: "📩 Заявки",
+                nav_analytics: "📊 Аналитика",
+                nav_structure: "🛠️ Структура сервера",
+                developed_by: "Разработано",
+                settings_saved: "Настройки сохранены!",
+                changes_warning: "Внимание: у вас есть несохраненные изменения!",
+                btn_save: "Сохранить",
+                btn_reset: "Сбросить",
+                status_configuring: "Настройка",
+                header_analytics: "Аналитика сервера",
+                stat_total_members: "👥 Всего участников",
+                stat_active_today: "🔥 Активность (24ч)",
+                stat_messages: "💬 Сообщений сегодня",
+                header_rules: "Управление правилами",
+                card_templates: "📜 Шаблоны правил",
+                label_template: "Выберите готовый шаблон",
+                placeholder_template: "-- Выберите шаблон --",
+                preview: "👀 Предпросмотр",
+                block: "Блок",
+                label_title: "Заголовок (Title)",
+                label_text: "Текст (Markdown)",
+                placeholder_title: "Заголовок блока...",
+                placeholder_text: "Текст блока...",
+                label_image: "URL Картинки",
+                label_sidebar: "Цвет полоски",
+                btn_save_rules: "Опубликовать правила",
+                btn_remove_block: "Удалить блок",
+                btn_no_sidebar: "Убрать полоску",
+                header_automod: "Автоматическая модерация",
+                card_links: "🛡️ Защита от ссылок",
+                label_invites: "Фильтр приглашений",
+                desc_invites: "Удалять приглашения на другие Discord серверы",
+                label_all_links: "Все ссылки",
+                desc_all_links: "Удалять любые ссылки (http/https)",
+                card_antispam: "⚡ Анти-спам",
+                label_antispam: "Защита от спама",
+                desc_antispam: "Наказывать за отправку слишком большого количества сообщений",
+                card_punishment: "⚖️ Наказание",
+                label_punish_type: "Тип наказания за нарушение",
+                label_mute_duration: "Длительность мута",
+                btn_save_settings: "Сохранить настройки",
+                punish_none: "Только удаление сообщения",
+                punish_timeout: "Тайм-аут (Мут)",
+                punish_ban: "Бан",
+                header_logs: "Логи сервера",
+                card_log_channel: "🆔 Канал для логов",
+                select_channel: "-- Выберите канал --",
+                card_log_events: "🔄 События для логирования",
+                log_msgs: "Сообщения",
+                log_msgs_desc: "Логировать отправку новых сообщений",
+                log_del: "Удаления",
+                log_del_desc: "Логировать удаленные сообщения",
+                log_edit: "Редактирование",
+                log_edit_desc: "Логировать измененные сообщения",
+                log_joins: "Вход участников",
+                log_joins_desc: "Логировать новых пользователей",
+                log_leaves: "Выход участников",
+                log_leaves_desc: "Логировать выход пользователей",
+                log_voice: "Голосовые каналы",
+                log_voice_desc: "Логировать переходы в ГС",
+                header_apps: "Управление заявками",
+                card_app_channel: "🆔 Канал для заявок",
+                card_actions: "📡 Действия",
+                label_panel_chan: "Канал для отправки панели",
+                btn_send_panel: "🚀 Отправить панель",
+                card_rec_status: "📡 Статус набора",
+                label_rec_open: "Прием заявок",
+                desc_rec_open: "Открыть или закрыть набор в команду",
+                card_rec_design: "🖼️ Оформление панели",
+                label_desc: "Описание",
+                placeholder_rec_title: "Напр. 📩 Подача заявок",
+                placeholder_rec_desc: "Введите описание...",
+                card_questions: "❓ Вопросы анкеты (макс. 5)",
+                btn_add_question: "➕ Добавить вопрос",
+                placeholder_q_name: "Название вопроса",
+                q_short: "Короткий",
+                q_paragraph: "Абзац",
+                btn_apply_app: "📩 Подать заявку",
+                app_fallback_title: "📩 Подача заявок",
+                app_fallback_desc: "Нажмите на кнопку ниже, чтобы подать заявку...",
+                label_approve_msg: "Сообщение при одобрении",
+                placeholder_approve_msg: "Напр. Ссылка на чат или важная информация...",
+                label_approve_role: "Роль при одобрении",
+                placeholder_approve_role: "-- Выберите роль --",
+                label_dm_notify: "Уведомление в ЛС",
+                desc_dm_notify: "Отправлять пользователю сообщение о наказании",
+                placeholder_dm_msg: "Вы были наказаны на сервере {guild}. Причина: {reason}",
+                dm_vars_desc: "Доступные переменные:",
+                today_at: "Сегодня, в",
+                header_struct_editor: "🏗️ Конструктор шаблона",
+                desc_struct_editor: "Создайте структуру категорий и каналов, которую бот развернет на сервере.",
+                btn_add_category: "➕ Добавить категорию",
+                btn_apply_struct: "🚀 Применить структуру на сервер",
+                struct_preview: "📂 Предпросмотр структуры"
+            },
+            en: {
+                title: "Velyx | Dashboard",
+                back_to_servers: "← Back to servers",
+                nav_rules: "📜 Rules",
+                nav_automod: "🛡️ Auto-Mod",
+                nav_logs: "📝 Server Logs",
+                nav_apps: "📩 Applications",
+                nav_analytics: "📊 Analytics",
+                nav_structure: "🛠️ Server Structure",
+                developed_by: "Developed by",
+                settings_saved: "Settings saved!",
+                changes_warning: "Attention: you have unsaved changes!",
+                btn_save: "Save Changes",
+                btn_reset: "Reset",
+                status_configuring: "Configuring",
+                header_analytics: "Server Analytics",
+                stat_total_members: "👥 Total Members",
+                stat_active_today: "🔥 Active (24h)",
+                stat_messages: "💬 Messages Today",
+                header_rules: "Rules Management",
+                card_templates: "📜 Rule Templates",
+                label_template: "Select a ready-to-use template",
+                placeholder_template: "-- Select template --",
+                preview: "👀 Preview",
+                block: "Block",
+                label_title: "Title",
+                label_text: "Text (Markdown)",
+                placeholder_title: "Block title...",
+                placeholder_text: "Block text...",
+                label_image: "Image URL",
+                label_sidebar: "Sidebar Color",
+                btn_save_rules: "Publish Rules",
+                btn_remove_block: "Remove block",
+                btn_no_sidebar: "Remove sidebar",
+                header_automod: "Auto Moderation",
+                card_links: "🛡️ Link Protection",
+                label_invites: "Invite Filter",
+                desc_invites: "Delete invites to other Discord servers",
+                label_all_links: "All Links",
+                desc_all_links: "Delete any links (http/https)",
+                card_antispam: "⚡ Anti-Spam",
+                label_antispam: "Spam Protection",
+                desc_antispam: "Punish users for sending too many messages",
+                card_punishment: "⚖️ Punishment",
+                label_punish_type: "Punishment type for violation",
+                label_mute_duration: "Mute duration",
+                btn_save_settings: "Save Settings",
+                punish_none: "Message deletion only",
+                punish_timeout: "Timeout (Mute)",
+                punish_ban: "Ban",
+                header_logs: "Server Logs",
+                card_log_channel: "🆔 Log Channel",
+                select_channel: "-- Select channel --",
+                card_log_events: "🔄 Logging Events",
+                log_msgs: "Messages",
+                log_msgs_desc: "Log new messages",
+                log_del: "Deletions",
+                log_del_desc: "Log deleted messages",
+                log_edit: "Edits",
+                log_edit_desc: "Log edited messages",
+                log_joins: "Member Joins",
+                log_joins_desc: "Log new members",
+                log_leaves: "Member Leaves",
+                log_leaves_desc: "Log members leaving",
+                log_voice: "Voice Channels",
+                log_voice_desc: "Log voice state changes",
+                header_apps: "Applications Management",
+                card_app_channel: "🆔 Apps Channel",
+                card_actions: "📡 Actions",
+                label_panel_chan: "Channel to send panel",
+                btn_send_panel: "🚀 Send Recruitment Panel",
+                card_rec_status: "📡 Recruitment Status",
+                label_rec_open: "Applications Open",
+                desc_rec_open: "Open or close team recruitment",
+                card_rec_design: "🖼️ Panel Design",
+                label_desc: "Description",
+                placeholder_rec_title: "e.g. 📩 Applications",
+                placeholder_rec_desc: "Enter description...",
+                card_questions: "❓ Form Questions (max 5)",
+                btn_add_question: "➕ Add question",
+                placeholder_q_name: "Question title",
+                q_short: "Short",
+                q_paragraph: "Paragraph",
+                btn_apply_app: "📩 Apply Now",
+                app_fallback_title: "📩 Applications",
+                app_fallback_desc: "Click the button below to apply...",
+                label_approve_msg: "Approval Message",
+                placeholder_approve_msg: "e.g. Chat link or important info...",
+                label_approve_role: "Approval Role",
+                placeholder_approve_role: "-- Select Role --",
+                label_dm_notify: "DM Notification",
+                desc_dm_notify: "Send a punishment message to the user",
+                placeholder_dm_msg: "You were punished in {guild}. Reason: {reason}",
+                dm_vars_desc: "Available variables:",
+                today_at: "Today at",
+                header_struct_editor: "🏗️ Template Designer",
+                desc_struct_editor: "Design categories and channels that the bot will create on the server.",
+                btn_add_category: "➕ Add Category",
+                btn_apply_struct: "🚀 Apply Structure to Server",
+                struct_preview: "📂 Structure Preview"
+            }
+        };
+
+        window.setLanguage = function(lang) {
+            localStorage.setItem('lang', lang);
+            const t = translations[lang];
+            if (!t) return;
+
+            document.querySelectorAll('[data-i18n]').forEach(el => {
+                try {
+                    const key = el.getAttribute('data-i18n');
+                    if (!t[key]) return;
+                    if (el.tagName === 'INPUT' || el.tagName === 'TEXTAREA') {
+                        el.placeholder = t[key];
+                    } else {
+                        el.innerText = t[key];
+                    }
+                } catch(e) {}
+            });
+
+            document.title = t.title;
+            const btnRu = document.getElementById('btn-ru');
+            const btnEn = document.getElementById('btn-en');
+            if (btnRu) btnRu.classList.toggle('active', lang === 'ru');
+            if (btnEn) btnEn.classList.toggle('active', lang === 'en');
+
+            if (typeof renderQuestions === 'function') renderQuestions();
+            if (typeof updateRecruitmentPreview === 'function') updateRecruitmentPreview();
+            if (typeof renderRuleEmbeds === 'function') renderRuleEmbeds();
+            if (typeof updateRulesPreview === 'function') updateRulesPreview();
+        };
+    </script>
     <style>
         :root {
             --bg-dark: #0f1012;
@@ -253,31 +489,37 @@
 
         /* Language Switcher */
         .lang-switcher {
-            position: fixed;
-            top: 20px;
-            right: 20px;
             display: flex;
-            gap: 5px;
+            gap: 4px;
             background: rgba(255, 255, 255, 0.05);
-            padding: 5px;
-            border-radius: 12px;
-            backdrop-filter: blur(10px);
+            padding: 4px;
+            border-radius: 8px;
+            margin-bottom: 20px;
             border: 1px solid rgba(255, 255, 255, 0.1);
-            z-index: 1000;
         }
 
         .lang-btn {
-            padding: 6px 12px;
-            border-radius: 8px;
+            flex: 1;
+            padding: 6px;
+            border-radius: 6px;
             cursor: pointer;
-            font-size: 12px;
-            font-weight: 600;
-            transition: all 0.2s ease;
+            font-size: 11px;
+            font-weight: 700;
+            transition: all 0.2s;
             color: var(--text-dim);
             border: none;
             background: transparent;
             text-transform: uppercase;
-            letter-spacing: 0.5px;
+        }
+
+        .lang-btn:hover {
+            color: #fff;
+            background: rgba(255, 255, 255, 0.05);
+        }
+
+        .lang-btn.active {
+            background: var(--accent);
+            color: #fff;
         }
 
         .lang-btn:hover {
@@ -603,12 +845,11 @@
 
     <div id="toast" data-i18n="settings_saved">Настройки сохранены!</div>
 
-    <div class="lang-switcher">
-        <button class="lang-btn active" onclick="setLanguage('ru')" id="btn-ru">RU</button>
-        <button class="lang-btn" onclick="setLanguage('en')" id="btn-en">EN</button>
-    </div>
-
     <div class="sidebar">
+        <div class="lang-switcher">
+            <button class="lang-btn active" onclick="setLanguage('ru')" id="btn-ru">RU</button>
+            <button class="lang-btn" onclick="setLanguage('en')" id="btn-en">EN</button>
+        </div>
         <!-- Server Profile Section -->
         <div class="server-profile" id="serverProfile">
             <img id="serverIcon" src="https://cdn.discordapp.com/embed/avatars/0.png" alt="Server Icon">
@@ -1154,148 +1395,6 @@
     </div>
 
     <script>
-        const translations = {
-            ru: {
-                title: "Velyx | Панель управления",
-                back_to_servers: "← К списку серверов",
-                nav_rules: "📜 Правила",
-                nav_automod: "🛡️ Авто-мод",
-                nav_logs: "📝 Логи сервера",
-                nav_apps: "📩 Заявки",
-                nav_structure: "🛠️ Структура сервера",
-                developed_by: "Разработано",
-                settings_saved: "Настройки сохранены!",
-                changes_warning: "Внимание: у вас есть несохраненные изменения!",
-                btn_save: "Сохранить",
-                btn_reset: "Сбросить",
-                status_configuring: "Настройка",
-                
-                // Analytics
-                header_analytics: "Аналитика сервера",
-                stat_total_members: "👥 Всего участников",
-                stat_active_today: "🔥 Активность (24ч)",
-                stat_messages: "💬 Сообщений сегодня",
-                
-                // Rules Section
-                header_rules: "Управление правилами",
-                card_templates: "📜 Шаблоны правил",
-                label_template: "Выберите готовый шаблон",
-                placeholder_template: "-- Выберите шаблон --",
-                preview: "👀 Предпросмотр",
-                block: "Блок",
-                label_title: "Заголовок (Title)",
-                label_text: "Текст (Markdown)",
-                placeholder_title: "Заголовок блока...",
-                placeholder_text: "Текст блока...",
-                label_image: "URL Картинки",
-                label_sidebar: "Цвет полоски",
-                btn_save_rules: "Опубликовать правила",
-                btn_remove_block: "Удалить блок",
-                btn_no_sidebar: "Убрать полоску",
-
-                // Auto-Mod Section
-                header_automod: "Автоматическая модерация",
-                card_links: "🛡️ Защита от ссылок",
-                label_invites: "Фильтр приглашений",
-                desc_invites: "Удалять приглашения на другие Discord серверы",
-                label_all_links: "Все ссылки",
-                desc_all_links: "Удалять любые ссылки (http/https)",
-                card_antispam: "⚡ Анти-спам",
-                label_antispam: "Защита от спама",
-                desc_antispam: "Наказывать за отправку слишком большого количества сообщений",
-                card_punishment: "⚖️ Наказание",
-                label_punish_type: "Тип наказания за нарушение",
-                label_mute_duration: "Длительность мута",
-                btn_save_settings: "Сохранить настройки",
-                punish_none: "Только удаление сообщения",
-                punish_timeout: "Тайм-аут (Мут)",
-                punish_ban: "Бан",
-
-                // Logs Section
-                header_logs: "Логи сервера",
-                card_log_channel: "🆔 Канал для логов",
-                select_channel: "-- Выберите канал --",
-                card_log_events: "🔄 События для логирования",
-                log_msgs: "Сообщения",
-                log_msgs_desc: "Логировать отправку новых сообщений",
-                log_del: "Удаления",
-                log_del_desc: "Логировать удаленные сообщения",
-                log_edit: "Редактирование",
-                log_edit_desc: "Логировать измененные сообщения",
-                log_joins: "Вход участников",
-                log_joins_desc: "Логировать новых пользователей",
-                log_leaves: "Выход участников",
-                log_leaves_desc: "Логировать выход пользователей",
-                log_voice: "Голосовые каналы",
-                log_voice_desc: "Логировать переходы в ГС",
-
-                // Applications Section
-                header_apps: "Управление заявками",
-                card_app_channel: "🆔 Канал для заявок",
-                card_actions: "📡 Действия",
-                label_panel_chan: "Канал для отправки панели",
-                btn_send_panel: "🚀 Отправить панель",
-                card_rec_status: "📡 Статус набора",
-                label_rec_open: "Прием заявок",
-                desc_rec_open: "Открыть или закрыть набор в команду",
-                card_rec_design: "🖼️ Оформление панели",
-                label_desc: "Описание",
-                placeholder_rec_title: "Напр. 📩 Подача заявок",
-                placeholder_rec_desc: "Введите описание...",
-                card_questions: "❓ Вопросы анкеты (макс. 5)",
-                btn_add_question: "➕ Добавить вопрос",
-                placeholder_q_name: "Название вопроса",
-                q_short: "Короткий",
-                q_paragraph: "Абзац",
-                btn_apply_app: "📩 Подать заявку",
-                app_fallback_title: "📩 Подача заявок",
-                app_fallback_desc: "Нажмите на кнопку ниже, чтобы подать заявку...",
-                
-                label_approve_msg: "Сообщение при одобрении",
-                placeholder_approve_msg: "Напр. Ссылка на чат или важная информация...",
-                label_approve_role: "Роль при одобрении",
-                placeholder_approve_role: "-- Выберите роль --",
-                
-                label_dm_notify: "Уведомление в ЛС",
-                desc_dm_notify: "Отправлять пользователю сообщение о наказании",
-                placeholder_dm_msg: "Вы были наказаны на сервере {guild}. Причина: {reason}",
-                dm_vars_desc: "Доступные переменные:",
-                today_at: "Сегодня, в",
-                
-                // Structure
-                header_struct_editor: "🏗️ Конструктор шаблона",
-                desc_struct_editor: "Создайте структуру категорий и каналов, которую бот развернет на сервере.",
-                btn_add_category: "➕ Добавить категорию",
-                btn_apply_struct: "🚀 Применить структуру на сервер",
-                struct_preview: "📂 Предпросмотр структуры"
-            },
-            en: {
-                title: "Velyx | Dashboard",
-                back_to_servers: "← Back to servers",
-                nav_rules: "📜 Rules",
-                nav_automod: "🛡️ Auto-Mod",
-                nav_logs: "📝 Server Logs",
-                nav_apps: "📩 Applications",
-                nav_structure: "🛠️ Server Structure",
-                developed_by: "Developed by",
-                settings_saved: "Settings saved!",
-                changes_warning: "Attention: you have unsaved changes!",
-                btn_save: "Save Changes",
-                btn_reset: "Reset",
-                status_configuring: "Configuring",
-
-                // Analytics
-                header_analytics: "Server Analytics",
-                stat_total_members: "👥 Total Members",
-                stat_active_today: "🔥 Active (24h)",
-                stat_messages: "💬 Messages Today",
-
-                // Rules Section
-                header_rules: "Rules Management",
-                card_templates: "📜 Rule Templates",
-                label_template: "Select a ready-to-use template",
-                placeholder_template: "-- Select template --",
-                preview: "👀 Preview",
                 block: "Block",
                 label_title: "Title",
                 label_text: "Text (Markdown)",
@@ -1384,6 +1483,36 @@
                 struct_preview: "📂 Structure Preview"
             }
         };
+        
+        function setLanguage(lang) {
+            localStorage.setItem('lang', lang);
+            const t = translations[lang];
+            if (!t) return;
+
+            document.querySelectorAll('[data-i18n]').forEach(el => {
+                const key = el.getAttribute('data-i18n');
+                if (!t[key]) return;
+                
+                if (el.tagName === 'INPUT' || el.tagName === 'TEXTAREA') {
+                    el.placeholder = t[key];
+                } else {
+                    el.innerText = t[key];
+                }
+            });
+
+            document.title = t.title;
+
+            const btnRu = document.getElementById('btn-ru');
+            const btnEn = document.getElementById('btn-en');
+            if (btnRu) btnRu.classList.toggle('active', lang === 'ru');
+            if (btnEn) btnEn.classList.toggle('active', lang === 'en');
+
+            // Refresh dynamic parts if they are initialized
+            if (typeof renderQuestions === 'function') renderQuestions();
+            if (typeof updateRecruitmentPreview === 'function') updateRecruitmentPreview();
+            if (typeof renderRuleEmbeds === 'function') renderRuleEmbeds();
+            if (typeof updateRulesPreview === 'function') updateRulesPreview();
+        }
 
         let originalConfig = {};
         let currentConfig = {
