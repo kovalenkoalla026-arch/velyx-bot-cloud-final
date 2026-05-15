@@ -183,7 +183,7 @@
             if (footer) footer.innerText = translations[lang].developed_by;
 
             // Re-render servers if they are already loaded
-            if (window.currentServers) renderServers(window.currentServers);
+            if (globalData) renderServers();
         }
 
         // Initialize language
