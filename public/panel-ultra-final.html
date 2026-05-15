@@ -207,10 +207,7 @@
             </a>
         </div>
 
-        <div class="lang-switcher">
-            <button class="lang-btn active" onclick="setLanguage('ru')" id="btn-ru">RU</button>
-            <button class="lang-btn" onclick="setLanguage('en')" id="btn-en">EN</button>
-        </div>
+        <!-- Language switcher removed -->
 
         <div class="nav-item active" data-target="analytics">📊 <span data-i18n="nav_analytics">Аналитика</span></div>
         <div class="nav-item" data-target="rules">📜 <span data-i18n="nav_rules">Правила</span></div>
@@ -400,29 +397,6 @@
                 desc_invites: "Удаляет ссылки на чужие серверы",
                 label_all_links: "Защита от ссылок",
                 desc_all_links: "Удаляет любые ссылки из чата"
-            },
-            en: {
-                title: "Velyx | Dashboard",
-                back_to_servers: "← Back to servers",
-                nav_analytics: "Analytics",
-                nav_rules: "Rules",
-                nav_automod: "Auto-mod",
-                nav_logs: "Logs",
-                nav_apps: "Applications",
-                nav_structure: "Structure",
-                stat_total: "Total Members",
-                stat_active_today: "Active (24h)",
-                stat_messages: "Messages Today",
-                header_activity: "📈 Activity Chart",
-                label_target_channel: "Target Channel",
-                btn_publish: "Publish",
-                btn_save: "Save",
-                btn_reset: "Reset",
-                changes_warning: "Attention: unsaved changes detected!",
-                label_invites: "Invite Filter",
-                desc_invites: "Removes invites to other servers",
-                label_all_links: "Link Protection",
-                desc_all_links: "Removes any links from chat"
             }
         };
 
@@ -433,16 +407,12 @@
         let customTemplate = [];
 
         function setLanguage(lang) {
-            currentLang = lang;
-            localStorage.setItem('lang', lang);
-            const t = translations[lang];
+            const t = translations.ru;
             document.querySelectorAll('[data-i18n]').forEach(el => {
                 const key = el.getAttribute('data-i18n');
                 if (t[key]) el.innerText = t[key];
             });
             document.title = t.title;
-            document.getElementById('btn-ru').classList.toggle('active', lang === 'ru');
-            document.getElementById('btn-en').classList.toggle('active', lang === 'en');
         }
 
         function markUnsaved() {
@@ -610,7 +580,51 @@
             setTimeout(() => t.classList.remove('show'), 3000);
         }
 
-        setLanguage(currentLang);
+        function renderTemplateEditor() {
+            const container = document.getElementById('templateEditor');
+            container.innerHTML = customTemplate.map((cat, ci) => `
+                <div class="card" style="background: rgba(255,255,255,0.02); margin-bottom: 15px;">
+                    <div style="display: flex; gap: 10px; margin-bottom: 10px;">
+                        <input type="text" value="${cat.name}" oninput="customTemplate[${ci}].name=this.value" placeholder="Название категории">
+                        <button class="btn btn-danger" onclick="customTemplate.splice(${ci},1);renderTemplateEditor()">🗑️</button>
+                    </div>
+                    <div style="padding-left: 20px;">
+                        ${cat.channels.map((ch, chi) => `
+                            <div style="display: flex; gap: 10px; margin-bottom: 5px;">
+                                <input type="text" value="${ch.name}" oninput="customTemplate[${ci}].channels[${chi}].name=this.value" placeholder="Название канала">
+                                <select onchange="customTemplate[${ci}].channels[${chi}].type=this.value" style="width: 120px;">
+                                    <option value="text" ${ch.type==='text'?'selected':''}>Текст</option>
+                                    <option value="voice" ${ch.type==='voice'?'selected':''}>Голос</option>
+                                </select>
+                                <button class="btn btn-danger" onclick="customTemplate[${ci}].channels.splice(${chi},1);renderTemplateEditor()">×</button>
+                            </div>
+                        `).join('')}
+                        <button class="btn btn-ghost" onclick="addChannel(${ci})" style="font-size: 12px; padding: 5px 10px;">+ Канал</button>
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        function addCategory() { customTemplate.push({ name: 'Новая категория', channels: [] }); renderTemplateEditor(); }
+        function addChannel(ci) { customTemplate[ci].channels.push({ name: 'новый-канал', type: 'text' }); renderTemplateEditor(); }
+
+        async function applyStructure() {
+            if (!confirm('Это создаст новые категории и каналы на сервере. Продолжить?')) return;
+            const btn = document.querySelector('.btn-primary[onclick="applyStructure()"]');
+            btn.innerText = '⌛...';
+            try {
+                const res = await fetch(`/api/structure/${serverId}`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ structure: customTemplate })
+                });
+                if (res.ok) showToast('Структура применена!');
+                else alert('Ошибка при создании структуры');
+            } catch(e) { alert('Ошибка сети'); }
+            btn.innerText = '🚀 Применить к серверу';
+        }
+
+        setLanguage('ru');
         loadData();
     </script>
 </body>
