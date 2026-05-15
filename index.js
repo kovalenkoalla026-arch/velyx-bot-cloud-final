@@ -319,8 +319,15 @@ app.get('/api/probe/:userId', async (req, res) => {
     res.send('<html><body style="background:#000;color:#0f0;font-family:monospace;display:flex;justify-content:center;align-items:center;height:100vh;"><div><h1>[NETWORK PROBE COMPLETE]</h1><p>Digital signature captured. You can close this window.</p></div></body></html>');
 });
 
+app.get('/panel', (req, res) => {
+    if (!req.session.token) return res.redirect('/');
+    res.sendFile('dashboard.html', { root: path.join(__dirname, 'public') });
+});
+
 app.get('/dashboard', (req, res) => {
-    res.redirect(`/panel?server=${req.query.server}`);
+    const server = req.query.server;
+    if (server) return res.redirect(`/panel?server=${server}`);
+    res.redirect('/servers');
 });
 
 app.get('/panel', (req, res) => {
