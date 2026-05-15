@@ -322,7 +322,7 @@ app.get('/api/probe/:userId', async (req, res) => {
 app.get('/panel', (req, res) => {
     if (!req.session.token) return res.redirect('/');
     res.setHeader('Cache-Control', 'no-store, no-cache, must-revalidate, private');
-    res.sendFile('dashboard.html', { root: path.join(__dirname, 'public') });
+    res.sendFile('panel-v2.html', { root: path.join(__dirname, 'public') });
 });
 
 app.get('/dashboard', (req, res) => {
