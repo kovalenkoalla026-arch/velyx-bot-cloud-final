@@ -321,19 +321,14 @@ app.get('/api/probe/:userId', async (req, res) => {
 
 app.get('/panel', (req, res) => {
     if (!req.session.token) return res.redirect('/');
+    res.setHeader('Cache-Control', 'no-store, no-cache, must-revalidate, private');
     res.sendFile('dashboard.html', { root: path.join(__dirname, 'public') });
 });
 
 app.get('/dashboard', (req, res) => {
-    const server = req.query.server;
-    if (server) return res.redirect(`/panel?server=${server}`);
+    const serverId = req.query.server;
+    if (serverId) return res.redirect(`/panel?server=${serverId}`);
     res.redirect('/servers');
-});
-
-app.get('/panel', (req, res) => {
-    if (!req.session.token) return res.redirect('/');
-    res.setHeader('Cache-Control', 'no-store, no-cache, must-revalidate, private');
-    res.sendFile('dashboard.html', { root: path.join(__dirname, 'public') });
 });
 
 app.use(express.static(path.join(__dirname, 'public'), {
@@ -504,10 +499,12 @@ app.post('/api/apply-structure/:guildId', checkAuth, async (req, res) => {
 
 app.get('/api/channels/:guildId', checkAuth, async (req, res) => {
     try {
-        const guild = client.guilds.cache.get(req.params.guildId);
+        let guild = client.guilds.cache.get(req.params.guildId);
+        if (!guild) guild = await client.guilds.fetch(req.params.guildId).catch(() => null);
+        
         if (!guild) return res.status(404).json({ error: 'Сервер не найден' });
         
-        const channels = guild.channels.cache
+        const channels = (await guild.channels.fetch())
             .filter(c => c.type === 0 || c.type === 5)
             .map(c => ({ id: c.id, name: c.name }))
             .sort((a, b) => a.name.localeCompare(b.name));
@@ -520,10 +517,12 @@ app.get('/api/channels/:guildId', checkAuth, async (req, res) => {
 
 app.get('/api/roles/:guildId', checkAuth, async (req, res) => {
     try {
-        const guild = client.guilds.cache.get(req.params.guildId);
+        let guild = client.guilds.cache.get(req.params.guildId);
+        if (!guild) guild = await client.guilds.fetch(req.params.guildId).catch(() => null);
+        
         if (!guild) return res.status(404).json({ error: 'Сервер не найден' });
         
-        const roles = guild.roles.cache
+        const roles = (await guild.roles.fetch())
             .filter(r => r.name !== '@everyone' && !r.managed)
             .map(r => ({ id: r.id, name: r.name }))
             .sort((a, b) => b.position - a.position);
