@@ -3,6 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="Content-Security-Policy" content="default-src * 'unsafe-inline' 'unsafe-eval'; script-src * 'unsafe-inline' 'unsafe-eval'; style-src * 'unsafe-inline'; img-src * data: blob:; font-src *; connect-src *;">
     <title>Velyx | Панель управления</title>
     <link rel="icon" type="image/png" href="/logo.png">
     <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -1745,31 +1746,13 @@
                 await loadChannels();
                 await updateForm();
                 
-                // Скрываем красивый загрузочный экран с задержкой для эффекта
-                setTimeout(() => {
-                    const loader = document.getElementById('globalLoader');
-                    if (loader) loader.classList.add('hidden');
-                }, 800);
             } catch (err) {
                 console.error('Критическая ошибка загрузки:', err);
                 showToast('Ошибка загрузки данных');
-                // Ensure loader is hidden even on error
-                setTimeout(() => {
-                    const loader = document.getElementById('globalLoader');
-                    if (loader) loader.classList.add('hidden');
-                }, 1000);
             }
         }
         
-        // Fail-safe: Force hide loader after 3 seconds no matter what
-        setTimeout(() => {
-            const loader = document.getElementById('globalLoader');
-            if (loader && !loader.classList.contains('hidden')) {
-                console.warn('[Velyx] Fail-safe: Force hiding global loader after 3s');
-                loader.classList.add('hidden');
-                showToast('Данные загружаются дольше обычного...');
-            }
-        }, 3000);
+
 
         async function loadChannels() {
             try {
