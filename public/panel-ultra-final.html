@@ -185,17 +185,67 @@
         .embed-title { color: #fff; font-weight: 600; font-size: 16px; margin-bottom: 8px; }
         .embed-desc { color: #dbdee1; font-size: 14px; line-height: 1.375; }
 
-        @media (max-width: 992px) {
-            .sidebar { position: fixed; transform: translateX(-100%); }
-            .sidebar.open { transform: translateX(0); }
-            .save-bar { left: 20px; }
+        /* Responsive Fixes */
+        .mobile-header {
+            display: none;
+            background: var(--sidebar);
+            padding: 15px 20px;
+            align-items: center;
+            justify-content: space-between;
+            position: sticky;
+            top: 0;
+            z-index: 110;
+            border-bottom: 1px solid rgba(255,255,255,0.05);
+        }
+        .menu-btn {
+            background: none;
+            border: none;
+            color: var(--text);
+            font-size: 24px;
+            cursor: pointer;
+        }
+
+        @media (max-width: 900px) {
+            body { flex-direction: column; }
+            .mobile-header { display: flex; }
+            .sidebar {
+                position: fixed;
+                left: -280px;
+                top: 0;
+                bottom: 0;
+                height: 100vh;
+                width: 280px;
+                transition: transform 0.3s ease;
+                z-index: 200;
+                box-shadow: 20px 0 50px rgba(0,0,0,0.5);
+                transform: translateX(0);
+            }
+            .sidebar.mobile-active { transform: translateX(280px); }
+            .main-content { padding: 20px; width: 100%; margin: 0; max-width: 100%; }
+            .stats-grid { grid-template-columns: 1fr !important; }
+            .card-header { flex-direction: column; align-items: flex-start; gap: 10px; }
+            .btn { width: 100%; justify-content: center; }
+            .save-bar { left: 10px; right: 10px; width: auto; bottom: 10px; }
+        }
+
+        @media (max-width: 480px) {
+            .setting-item { flex-direction: column; align-items: flex-start; gap: 10px; }
+            .setting-item .switch { align-self: flex-end; }
         }
     </style>
 </head>
 <body>
     <div id="toast">Настройки сохранены!</div>
 
-    <div class="sidebar">
+    <div class="mobile-header">
+        <div class="logo" style="padding: 0; margin: 0; font-size: 18px;">
+            <img src="/logo.png" alt="Velyx">
+            <span>Velyx</span>
+        </div>
+        <button class="menu-btn" onclick="document.querySelector('.sidebar').classList.toggle('mobile-active')">☰</button>
+    </div>
+
+    <div class="sidebar" onclick="if(window.innerWidth < 900) this.classList.remove('mobile-active')">
         <div class="logo">
             <img src="/logo.png" alt="Velyx">
             <span>Velyx</span>
