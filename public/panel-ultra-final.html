@@ -469,6 +469,7 @@
                 document.getElementById('recOpen').checked = config.recruitment?.open;
                 document.getElementById('recTitle').value = config.recruitment?.title || '';
                 document.getElementById('recDesc').value = config.recruitment?.description || '';
+                document.getElementById('recChannelId').value = config.recruitment?.channelId || '';
 
                 renderQuestions();
                 renderRuleBlocks();
@@ -535,6 +536,7 @@
             config.recruitment.open = document.getElementById('recOpen').checked;
             config.recruitment.title = document.getElementById('recTitle').value;
             config.recruitment.description = document.getElementById('recDesc').value;
+            config.recruitment.channelId = document.getElementById('recChannelId').value;
 
             try {
                 await fetch(`/api/config/${serverId}`, {
