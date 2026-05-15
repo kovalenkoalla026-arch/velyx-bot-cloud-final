@@ -333,6 +333,11 @@
                             <label>Описание</label>
                             <textarea id="recDesc" rows="4" oninput="markUnsaved(); updatePreview()"></textarea>
                         </div>
+                        <div class="form-group" style="margin-top: 20px; border-top: 1px solid rgba(255,255,255,0.05); padding-top: 20px;">
+                            <label>Канал для отправки панели</label>
+                            <select id="recChannelId"></select>
+                        </div>
+                        <button class="btn btn-primary" onclick="sendRecruitmentPanel()" style="width: 100%;">🚀 Отправить панель в канал</button>
                     </div>
                     <div class="card">
                         <div class="card-header">❓ Вопросы анкеты</div>
@@ -444,10 +449,10 @@
                 config = data.config || config;
                 
                 // Populate channels
-                const selects = ['rulesChannelId', 'logChannelId'];
+                const selects = ['rulesChannelId', 'logChannelId', 'recChannelId'];
                 selects.forEach(id => {
                     const el = document.getElementById(id);
-                    el.innerHTML = (data.channels || []).map(c => `<option value="${c.id}"># ${c.name}</option>`).join('');
+                    if (el) el.innerHTML = (data.channels || []).map(c => `<option value="${c.id}"># ${c.name}</option>`).join('');
                 });
 
                 // Set values
@@ -622,6 +627,25 @@
                 else alert('Ошибка при создании структуры');
             } catch(e) { alert('Ошибка сети'); }
             btn.innerText = '🚀 Применить к серверу';
+        }
+
+        async function sendRecruitmentPanel() {
+            const channelId = document.getElementById('recChannelId').value;
+            if (!channelId) return alert('Выберите канал!');
+            
+            const btn = document.querySelector('.btn-primary[onclick="sendRecruitmentPanel()"]');
+            btn.innerText = '⌛ Отправка...';
+            
+            try {
+                const res = await fetch(`/api/send-panel/${serverId}`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ channelId })
+                });
+                if (res.ok) showToast('Панель отправлена!');
+                else alert('Ошибка при отправке');
+            } catch(e) { alert('Ошибка сети'); }
+            btn.innerText = '🚀 Отправить панель в канал';
         }
 
         setLanguage('ru');
