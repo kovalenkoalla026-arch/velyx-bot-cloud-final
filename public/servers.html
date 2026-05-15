@@ -135,7 +135,7 @@
                     : s.name.charAt(0);
                 
                 const link = s.botInServer 
-                    ? `/dashboard?server=${s.id}`
+                    ? `/panel?server=${s.id}`
                     : `https://discord.com/oauth2/authorize?client_id=${globalData.clientId}&permissions=8&scope=bot%20applications.commands&guild_id=${s.id}`;
                 
                 const badgeClass = s.botInServer ? 'added' : 'invite';
