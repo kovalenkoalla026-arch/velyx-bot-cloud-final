@@ -24,12 +24,7 @@
         /* Loading Animation */
         .loader-container { grid-column: 1/-1; display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 60px; gap: 20px; }
         
-        .loader-robot { width: 200px; animation: pulseLoader 1.2s infinite ease-in-out; margin-bottom: 20px; filter: drop-shadow(0 10px 20px rgba(0,0,0,0.5)); }
-        
-        @keyframes pulseLoader { 
-            0%, 100% { transform: scale(0.95); opacity: 0.8; } 
-            50% { transform: scale(1.05); opacity: 1; } 
-        }
+        .loader-robot { width: 350px; margin-bottom: 20px; filter: drop-shadow(0 10px 20px rgba(0,0,0,0.5)); }
 
         .loader-text { color: #b0b3b8; font-size: 16px; font-weight: 600; letter-spacing: 1px; animation: textPulse 1.2s ease-in-out infinite; margin-top: 10px;}
         @keyframes textPulse { 0%, 100% { opacity: 0.4; } 50% { opacity: 1; } }
@@ -64,7 +59,84 @@
     </h1>
     <div class="grid" id="servers">
         <div class="loader-container">
-            <img src="/loader.gif" class="loader-robot" alt="Loading...">
+            <svg class="loader-robot" viewBox="0 0 680 680" xmlns="http://www.w3.org/2000/svg">
+<defs>
+<style>
+.svg-pulse{animation:svg-pulse 1s ease-in-out infinite;transform-origin:340px 240px}
+@keyframes svg-pulse{0%,100%{transform:scale(1)}50%{transform:scale(1.04)}}
+.svg-ant{animation:svg-ab .7s ease-in-out infinite}
+@keyframes svg-ab{0%,100%{opacity:1}50%{opacity:.25}}
+.svg-eye{animation:svg-ey .7s ease-in-out infinite}
+@keyframes svg-ey{0%,100%{opacity:1}50%{opacity:.3}}
+.svg-gear-spin{animation:svg-gs .7s linear infinite;transform-origin:340px 415px}
+@keyframes svg-gs{to{transform:rotate(360deg)}}
+.svg-chk{animation:svg-chk .7s ease-in-out infinite}
+@keyframes svg-chk{0%,100%{opacity:1}50%{opacity:.2}}
+.svg-cl1{animation:svg-cl 1s ease-in-out infinite}
+.svg-cl2{animation:svg-cl 1s ease-in-out infinite .2s}
+.svg-cl3{animation:svg-cl 1s ease-in-out infinite .4s}
+@keyframes svg-cl{0%,100%{opacity:.2}50%{opacity:1}}
+.svg-pb{animation:svg-pb 1s ease-in-out infinite}
+@keyframes svg-pb{0%{width:0}70%{width:280px}100%{width:280px}}
+.svg-d1{animation:svg-db .5s ease-in-out infinite}
+.svg-d2{animation:svg-db .5s ease-in-out infinite .12s}
+.svg-d3{animation:svg-db .5s ease-in-out infinite .24s}
+@keyframes svg-db{0%,100%{transform:translateY(0);opacity:.3}50%{transform:translateY(-5px);opacity:1}}
+</style>
+<clipPath id="pc"><rect x="195" y="490" width="290" height="14" rx="7"/></clipPath>
+<linearGradient id="hg" x1="0" y1="0" x2="0" y2="1">
+  <stop offset="0%" stop-color="#eeeaf8"/>
+  <stop offset="100%" stop-color="#c8c4e8"/>
+</linearGradient>
+<linearGradient id="sg" x1="0" y1="0" x2="0" y2="1">
+  <stop offset="0%" stop-color="#7b70e8"/>
+  <stop offset="100%" stop-color="#5a50c0"/>
+</linearGradient>
+</defs>
+<g class="svg-pulse">
+<rect x="210" y="175" width="34" height="60" rx="14" fill="#13111e" stroke="#2a2640" stroke-width="2"/>
+<rect x="436" y="175" width="34" height="60" rx="14" fill="#13111e" stroke="#2a2640" stroke-width="2"/>
+<rect x="230" y="138" width="220" height="140" rx="40" fill="url(#hg)"/>
+<rect x="248" y="156" width="184" height="108" rx="28" fill="#13111e"/>
+<rect x="336" y="100" width="8" height="44" rx="4" fill="#dddcf0"/>
+<circle class="svg-ant" cx="340" cy="96" r="13" fill="#7b6fef"/>
+<ellipse class="svg-eye" cx="306" cy="215" rx="18" ry="22" fill="#7b6fef"/>
+<ellipse class="svg-eye" cx="374" cy="215" rx="18" ry="22" fill="#7b6fef"/>
+<rect x="174" y="318" width="86" height="110" rx="10" fill="#13111e" stroke="#2a2640" stroke-width="2"/>
+<rect x="198" y="308" width="38" height="18" rx="5" fill="#23203a" stroke="#3a3660" stroke-width="1.5"/>
+<path class="svg-cl1" d="M188 349 L194 355 L204 344" fill="none" stroke="#7b6fef" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/>
+<rect class="svg-cl1" x="210" y="346" width="38" height="7" rx="3.5" fill="#4a4880"/>
+<path class="svg-cl2" d="M188 371 L194 377 L204 366" fill="none" stroke="#7b6fef" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/>
+<rect class="svg-cl2" x="210" y="368" width="30" height="7" rx="3.5" fill="#4a4880"/>
+<circle cx="193" cy="393" r="4" fill="#3a3660"/>
+<rect x="210" y="390" width="34" height="7" rx="3.5" fill="#2e2a4a"/>
+<circle cx="193" cy="413" r="4" fill="#2e2a4a"/>
+<rect x="210" y="410" width="24" height="7" rx="3.5" fill="#252240"/>
+<g class="svg-gear-spin">
+  <rect x="332" y="382" width="16" height="14" rx="3" fill="#7b6fef" transform="rotate(0,340,415)"/>
+  <rect x="332" y="382" width="16" height="14" rx="3" fill="#7b6fef" transform="rotate(45,340,415)"/>
+  <rect x="332" y="382" width="16" height="14" rx="3" fill="#7b6fef" transform="rotate(90,340,415)"/>
+  <rect x="332" y="382" width="16" height="14" rx="3" fill="#7b6fef" transform="rotate(135,340,415)"/>
+  <rect x="332" y="382" width="16" height="14" rx="3" fill="#7b6fef" transform="rotate(180,340,415)"/>
+  <rect x="332" y="382" width="16" height="14" rx="3" fill="#7b6fef" transform="rotate(225,340,415)"/>
+  <rect x="332" y="382" width="16" height="14" rx="3" fill="#7b6fef" transform="rotate(270,340,415)"/>
+  <rect x="332" y="382" width="16" height="14" rx="3" fill="#7b6fef" transform="rotate(315,340,415)"/>
+  <circle cx="340" cy="415" r="24" fill="#7b6fef"/>
+  <circle cx="340" cy="415" r="11" fill="#0f1012"/>
+</g>
+<path d="M430 318 L510 318 L510 370 C510 400 470 420 470 420 C470 420 430 400 430 370 Z" fill="url(#sg)" stroke="#7b70e0" stroke-width="1.5"/>
+<g class="svg-chk">
+  <path d="M450 370 L465 385 L494 352" fill="none" stroke="white" stroke-width="5" stroke-linecap="round" stroke-linejoin="round"/>
+</g>
+</g>
+<rect x="195" y="490" width="290" height="14" rx="8" fill="#13111e"/>
+<g clip-path="url(#pc)">
+  <rect class="svg-pb" x="195" y="490" width="0" height="14" rx="7" fill="#7b6fef"/>
+</g>
+<circle class="svg-d1" cx="316" cy="520" r="4.5" fill="#7b6fef"/>
+<circle class="svg-d2" cx="330" cy="520" r="4.5" fill="#7b6fef"/>
+<circle class="svg-d3" cx="344" cy="520" r="4.5" fill="#7b6fef"/>
+</svg>
             <div class="loader-text" data-i18n="loading">Поиск ваших серверов...</div>
         </div>
     </div>
