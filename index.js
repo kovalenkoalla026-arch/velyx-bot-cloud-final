@@ -1491,17 +1491,25 @@ client.on('interactionCreate', async interaction => {
 
   if (interaction.isModalSubmit()) {
     if (interaction.customId.startsWith('submit_modal_')) {
-      const config = await getConfig(interaction.guild.id);
-      const panelId = interaction.customId.replace('submit_modal_', '');
-      
-      let panelConfig = null;
-      if (panelId === 'global') {
-          panelConfig = config.recruitment;
-      } else {
-          panelConfig = config.activePanels && config.activePanels.get ? config.activePanels.get(panelId) : (config.activePanels ? config.activePanels[panelId] : null);
-      }
-      
-      if (!panelConfig) return interaction.reply({ content: 'Ошибка: панель не найдена.', ephemeral: true });
+      try {
+        const config = await getConfig(interaction.guild.id);
+        const panelId = interaction.customId.replace('submit_modal_', '');
+        
+        let panelConfig = null;
+        if (panelId === 'global' || panelId === 'legacy') {
+            panelConfig = config.recruitment;
+        } else {
+            // Support both Map and POJO
+            if (config.activePanels) {
+                if (typeof config.activePanels.get === 'function') {
+                    panelConfig = config.activePanels.get(panelId);
+                } else {
+                    panelConfig = config.activePanels[panelId];
+                }
+            }
+        }
+        
+        if (!panelConfig) return interaction.reply({ content: 'Ошибка: панель не найдена. Возможно, она была удалена или обновлена.', ephemeral: true });
 
         const user = interaction.user;
         const embed = new EmbedBuilder()
@@ -1511,24 +1519,38 @@ client.on('interactionCreate', async interaction => {
           .setTimestamp()
           .addFields({ name: '👤 Пользователь', value: `${user.tag} (<@${user.id}>)`, inline: false });
   
-        panelConfig.questions.forEach(q => {
-          const answer = interaction.fields.getTextInputValue(q.id);
-          embed.addFields({ name: `📝 ${q.label}`, value: answer || '*Пусто*', inline: false });
-        });
+        if (panelConfig.questions) {
+            panelConfig.questions.forEach(q => {
+                try {
+                    const answer = interaction.fields.getTextInputValue(q.id);
+                    embed.addFields({ name: `📝 ${q.label}`, value: answer || '*Пусто*', inline: false });
+                } catch(e) {}
+            });
+        }
   
         const row = new ActionRowBuilder().addComponents(
           new ButtonBuilder().setCustomId(`accept_${user.id}_${panelId}`).setLabel('Принять').setStyle(ButtonStyle.Success),
           new ButtonBuilder().setCustomId(`reject_${user.id}_${panelId}`).setLabel('Отклонить').setStyle(ButtonStyle.Danger)
         );
   
-        const adminChannel = client.channels.cache.get(config.adminChannelId);
+        let adminChannel = null;
+        if (config.adminChannelId) {
+            adminChannel = client.channels.cache.get(config.adminChannelId) || await client.channels.fetch(config.adminChannelId).catch(() => null);
+        }
+
         if (adminChannel) {
           await adminChannel.send({ embeds: [embed], components: [row] });
           await interaction.reply({ content: 'Ваша заявка успешно отправлена!', ephemeral: true });
         } else {
-          await interaction.reply({ content: 'Канал для админов не настроен!', ephemeral: true });
+          await interaction.reply({ content: '❌ Ошибка: Канал для получения заявок не настроен или бот не имеет к нему доступа. Пожалуйста, обратитесь к администратору.', ephemeral: true });
         }
+      } catch (err) {
+          console.error('Modal Submit Error:', err);
+          if (!interaction.replied) {
+              await interaction.reply({ content: '❌ Произошла ошибка при обработке вашей заявки.', ephemeral: true });
+          }
       }
+    }
   
       if (interaction.customId.startsWith('reject_modal_')) {
         const userId = interaction.customId.split('_')[2];
