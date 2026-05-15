@@ -2428,9 +2428,6 @@
             });
         }
 
-        renderRuleEmbeds();
-        loadSettings();
-
         async function setupLiveStats() {
             const channelId = document.getElementById('liveStatsChannelId').value;
             const statusEl = document.getElementById('liveStatsStatus');
@@ -2465,6 +2462,10 @@
         document.addEventListener('DOMContentLoaded', () => {
             const savedLang = localStorage.getItem('lang') || 'ru';
             setLanguage(savedLang);
+            
+            // Start loading data after language is set
+            renderRuleEmbeds();
+            loadSettings();
         });
     </script>
 </body>
