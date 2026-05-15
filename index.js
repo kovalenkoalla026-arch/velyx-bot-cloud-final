@@ -304,8 +304,8 @@ app.get('/', (req, res) => {
     } else {
         res.sendFile('index.html', { root: path.join(__dirname, 'public') }, (err) => {
             if (err) {
-                console.error('Error sending index.html:', err);
-                res.status(500).send('Error loading page');
+                console.error('Ошибка загрузки index.html:', err);
+                res.status(500).send('Ошибка загрузки страницы');
             }
         });
     }
@@ -1524,5 +1524,5 @@ client.on('ready', async () => {
   }
 });
 
-app.listen(PORT, () => console.log(`Web-портал запущен на порту ${PORT}`));
+app.listen(PORT, () => console.log(`Веб-портал запущен на порту ${PORT}`));
 client.login(process.env.DISCORD_TOKEN);
