@@ -269,19 +269,35 @@ app.use((req, res, next) => {
 });
 
 app.use(cors());
-app.use(bodyParser.json());
-app.set('trust proxy', 1);
+app.use(express.json());
+app.use(express.urlencoded({ extended: true }));
 app.use(session({
-  secret: process.env.SESSION_SECRET || 'secret-velyx-123',
-  resave: false,
-  saveUninitialized: false,
-  cookie: {
-    secure: true,
-    httpOnly: true,
-    sameSite: 'none',
-    maxAge: 7 * 24 * 60 * 60 * 1000
-  }
+    secret: process.env.SESSION_SECRET || 'velyx-secret-key-123',
+    resave: false,
+    saveUninitialized: false,
+    cookie: { 
+        secure: true, 
+        httpOnly: true, 
+        sameSite: 'none',
+        maxAge: 24 * 60 * 60 * 1000 // 24 hours
+    }
 }));
+
+// DEBUG ROUTES - MUST BE FIRST
+app.get('/test', (req, res) => {
+    res.send('DEPLOYMENT_ACTIVE_' + new Date().toISOString());
+});
+
+app.get(['/panel', '/dashboard'], (req, res) => {
+    res.setHeader('Cache-Control', 'no-store, no-cache, must-revalidate, private');
+    const filePath = path.join(__dirname, 'public', 'dashboard.html');
+    res.sendFile(filePath, (err) => {
+        if (err) {
+            console.error('File send error:', err);
+            res.status(404).send('DASHBOARD_FILE_NOT_FOUND_ON_SERVER');
+        }
+    });
+});
 app.get('/', (req, res) => {
     if (req.session.token) {
         res.redirect('/servers');
@@ -299,13 +315,7 @@ app.get('/servers', (req, res) => {
     res.redirect('/servers-page');
 });
 
-app.get('/test', (req, res) => res.send('DEPLOYMENT_SUCCESS_VERIFIED'));
-
-app.get(['/panel', '/dashboard'], (req, res) => {
-    // Check session manually for debugging if needed, but let's just serve the file for now
-    res.setHeader('Cache-Control', 'no-store, no-cache, must-revalidate, private');
-    res.sendFile(path.join(__dirname, 'public', 'dashboard.html'));
-});
+// Routes moved to top
 
 app.get('/servers-page', (req, res) => {
     if (!req.session.token) return res.redirect('/');
