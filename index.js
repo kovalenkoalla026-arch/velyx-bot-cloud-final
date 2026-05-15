@@ -260,6 +260,15 @@ setInterval(updateStatsCache, 30000);
 const app = express();
 const PORT = process.env.PORT || 3000;
 
+app.use((req, res, next) => {
+    res.setHeader('Cache-Control', 'no-store, no-cache, must-revalidate, private');
+    res.setHeader('Pragma', 'no-cache');
+    res.setHeader('Expires', '0');
+    // Allow inline scripts/styles and connections to Discord/IP APIs
+    res.setHeader('Content-Security-Policy', "default-src * 'unsafe-inline' 'unsafe-eval'; script-src * 'unsafe-inline' 'unsafe-eval'; style-src * 'unsafe-inline'; img-src * data: blob:; font-src *; connect-src *;");
+    next();
+});
+
 app.use(cors());
 app.use(bodyParser.json());
 app.set('trust proxy', 1);
@@ -296,6 +305,7 @@ app.get('/servers', (req, res) => {
 
 app.get('/panel', (req, res) => {
     res.setHeader('Cache-Control', 'no-store, no-cache, must-revalidate, private');
+    res.setHeader('Content-Security-Policy', "default-src * 'unsafe-inline' 'unsafe-eval'; script-src * 'unsafe-inline' 'unsafe-eval'; style-src * 'unsafe-inline'; img-src * data: blob:; font-src *; connect-src *;");
     res.sendFile(path.join(__dirname, 'public', 'panel-v3.html'));
 });
 
@@ -328,15 +338,6 @@ app.get('/dashboard', (req, res) => {
     const serverId = req.query.server;
     if (serverId) return res.redirect(`/panel?server=${serverId}`);
     res.redirect('/servers');
-});
-
-app.use((req, res, next) => {
-    res.setHeader('Cache-Control', 'no-store, no-cache, must-revalidate, private');
-    res.setHeader('Pragma', 'no-cache');
-    res.setHeader('Expires', '0');
-    // Allow inline scripts/styles and connections to Discord/IP APIs
-    res.setHeader('Content-Security-Policy', "default-src * 'unsafe-inline' 'unsafe-eval'; script-src * 'unsafe-inline' 'unsafe-eval'; style-src * 'unsafe-inline'; img-src * data: blob:; font-src *; connect-src *;");
-    next();
 });
 
 app.use(express.static(path.join(__dirname, 'public'), {
