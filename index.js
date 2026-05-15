@@ -15,7 +15,6 @@ const {
 } = require('discord.js');
 const express = require('express');
 const session = require('express-session');
-const MongoStore = require('connect-mongo');
 const mongoose = require('mongoose');
 const bodyParser = require('body-parser');
 const path = require('path');
@@ -276,14 +275,11 @@ app.use(session({
   secret: process.env.SESSION_SECRET || 'secret-velyx-123',
   resave: false,
   saveUninitialized: false,
-  store: USE_MONGO ? MongoStore.create({ 
-    mongoUrl: process.env.MONGODB_URI,
-    ttl: 14 * 24 * 60 * 60 // 14 days
-  }) : undefined,
   cookie: {
-    secure: true, // Required for Railway/HTTPS
+    secure: true,
     httpOnly: true,
-    maxAge: 14 * 24 * 60 * 60 * 1000 // 14 days
+    sameSite: 'none',
+    maxAge: 7 * 24 * 60 * 60 * 1000
   }
 }));
 app.get('/', (req, res) => {
