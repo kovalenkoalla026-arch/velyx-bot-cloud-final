@@ -1400,33 +1400,47 @@ client.on('interactionCreate', async interaction => {
 
   if (interaction.isButton()) {
     if (interaction.customId.startsWith('apply_modal_') || interaction.customId === 'open_apply_modal') {
-        // config is already awaited in outer scope
-        if (!config.recruitment.open) return interaction.reply({ content: 'Набор закрыт.', ephemeral: true });
-        
-        let panelConfig = null;
-        let panelId = 'legacy';
+        try {
+            // config is already awaited in outer scope
+            if (!config.recruitment.open) return interaction.reply({ content: 'Набор закрыт.', ephemeral: true });
+            
+            let panelConfig = null;
+            let panelId = 'legacy';
 
-        if (interaction.customId === 'open_apply_modal') {
-            // Use current global recruitment settings for legacy buttons
-            panelConfig = config.recruitment;
-            panelId = 'global';
-        } else {
-            panelId = interaction.customId.replace('apply_modal_', '');
-            panelConfig = config.activePanels && (config.activePanels.get ? config.activePanels.get(panelId) : config.activePanels[panelId]);
-        }
-        
-        if (!panelConfig || !panelConfig.questions || panelConfig.questions.length === 0) {
-            return interaction.reply({ content: 'Эта панель устарела или не настроена. Пожалуйста, настройте вопросы в панели управления.', ephemeral: true });
-        }
+            if (interaction.customId === 'open_apply_modal') {
+                panelConfig = config.recruitment;
+                panelId = 'global';
+            } else {
+                panelId = interaction.customId.replace('apply_modal_', '');
+                panelConfig = config.activePanels && (config.activePanels.get ? config.activePanels.get(panelId) : config.activePanels[panelId]);
+            }
+            
+            if (!panelConfig || !panelConfig.questions || panelConfig.questions.length === 0) {
+                return interaction.reply({ content: 'Эта панель устарела или не настроена. Пожалуйста, настройте вопросы в панели управления.', ephemeral: true });
+            }
 
-        const modal = new ModalBuilder().setCustomId(`submit_modal_${panelId}`).setTitle('Анкета');
-        const rows = panelConfig.questions.map(q => {
-          let safeLabel = q.label.length > 45 ? q.label.substring(0, 42) + '...' : q.label;
-          const input = new TextInputBuilder().setCustomId(q.id).setLabel(safeLabel).setStyle(q.style === 'short' ? TextInputStyle.Short : TextInputStyle.Paragraph).setRequired(true);
-          return new ActionRowBuilder().addComponents(input);
-        });
-        modal.addComponents(...rows);
-        await interaction.showModal(modal);
+            const modal = new ModalBuilder().setCustomId(`submit_modal_${panelId}`).setTitle('Анкета');
+            
+            // Discord supports max 5 fields in a modal
+            const questions = panelConfig.questions.slice(0, 5);
+            const rows = questions.map(q => {
+                let safeLabel = (q.label || 'Вопрос').length > 45 ? (q.label || 'Вопрос').substring(0, 42) + '...' : (q.label || 'Вопрос');
+                const input = new TextInputBuilder()
+                    .setCustomId(q.id || `q_${Math.random()}`)
+                    .setLabel(safeLabel)
+                    .setStyle(q.style === 'short' ? TextInputStyle.Short : TextInputStyle.Paragraph)
+                    .setRequired(true);
+                return new ActionRowBuilder().addComponents(input);
+            });
+            
+            modal.addComponents(...rows);
+            await interaction.showModal(modal);
+        } catch (e) {
+            console.error('Modal Interaction Error:', e);
+            if (!interaction.replied && !interaction.deferred) {
+                await interaction.reply({ content: '❌ Ошибка при открытии анкеты. Возможно, настроено слишком много вопросов (макс. 5).', ephemeral: true });
+            }
+        }
       }
       
       if (interaction.customId.startsWith('accept_') || interaction.customId.startsWith('reject_')) {
