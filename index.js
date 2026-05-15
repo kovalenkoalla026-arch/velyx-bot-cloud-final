@@ -409,10 +409,13 @@ app.get('/api/auth/me', async (req, res) => {
         const guilds = await guildsRes.json();
         
         if (!Array.isArray(guilds)) {
+            console.error('Guilds response is not an array:', guilds);
             return res.json({ user, servers: [], clientId: CLIENT_ID });
         }
 
-        const adminGuilds = guilds.filter(g => (g.permissions & 0x8) === 0x8);
+        console.log(`User ${user.tag} fetched ${guilds.length} guilds.`);
+        const adminGuilds = guilds.filter(g => (parseInt(g.permissions) & 0x8) === 0x8);
+        console.log(`Found ${adminGuilds.length} admin guilds.`);
         const servers = adminGuilds.map(g => ({
             id: g.id,
             name: g.name,
