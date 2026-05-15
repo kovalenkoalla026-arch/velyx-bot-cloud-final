@@ -648,6 +648,36 @@ app.post('/api/config/:guildId', checkAuth, async (req, res) => {
   res.json({ success: true });
 });
 
+app.post('/api/structure/:guildId', checkAuth, async (req, res) => {
+    const guildId = req.params.guildId;
+    const { structure } = req.body;
+    if (!structure || !Array.isArray(structure)) return res.status(400).send('Invalid structure');
+
+    const guild = client.guilds.cache.get(guildId);
+    if (!guild) return res.status(404).send('Guild not found');
+
+    try {
+        for (const cat of structure) {
+            const category = await guild.channels.create({
+                name: cat.name,
+                type: 4 // GuildCategory
+            });
+
+            for (const ch of cat.channels) {
+                await guild.channels.create({
+                    name: ch.name,
+                    type: ch.type === 'voice' ? 2 : 0, // GuildVoice : GuildText
+                    parent: category.id
+                });
+            }
+        }
+        res.json({ success: true });
+    } catch (error) {
+        console.error('Structure error:', error);
+        res.status(500).send('Error creating structure');
+    }
+});
+
 app.post('/api/send-panel/:guildId', checkAuth, async (req, res) => {
   const guildId = req.params.guildId;
   const config = await getConfig(guildId);
