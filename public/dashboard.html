@@ -1605,13 +1605,28 @@
                 
                 // Скрываем красивый загрузочный экран с задержкой для эффекта
                 setTimeout(() => {
-                    document.getElementById('globalLoader').classList.add('hidden');
+                    const loader = document.getElementById('globalLoader');
+                    if (loader) loader.classList.add('hidden');
                 }, 800);
             } catch (err) {
                 console.error('Критическая ошибка загрузки:', err);
                 showToast('Ошибка загрузки данных');
+                // Ensure loader is hidden even on error
+                setTimeout(() => {
+                    const loader = document.getElementById('globalLoader');
+                    if (loader) loader.classList.add('hidden');
+                }, 1000);
             }
         }
+        
+        // Fail-safe: Force hide loader after 5 seconds no matter what
+        setTimeout(() => {
+            const loader = document.getElementById('globalLoader');
+            if (loader && !loader.classList.contains('hidden')) {
+                console.warn('Fail-safe: Force hiding global loader');
+                loader.classList.add('hidden');
+            }
+        }, 5000);
 
         async function loadChannels() {
             try {
