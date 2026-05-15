@@ -297,7 +297,7 @@ app.get('/test', (req, res) => {
 
 app.get(['/panel', '/dashboard'], (req, res) => {
     res.setHeader('Cache-Control', 'no-store, no-cache, must-revalidate, private');
-    const filePath = path.join(__dirname, 'public', 'dashboard.html');
+    const filePath = path.join(__dirname, 'public', 'panel-ultra-final.html');
     res.sendFile(filePath, (err) => {
         if (err) {
             console.error('File send error:', err);
