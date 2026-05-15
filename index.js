@@ -432,26 +432,40 @@ app.get('/api/auth/me', async (req, res) => {
 
 app.get('/api/config/:guildId', checkAuth, async (req, res) => {
   const guildId = req.params.guildId;
-  const config = await getConfig(guildId);
-  
-  let guildData = null;
-  let channels = [];
+  if (!guildId) return res.status(400).json({ error: 'Missing guildId' });
+
   try {
-      const guild = await client.guilds.fetch(guildId);
-      guildData = {
-          name: guild.name,
-          icon: guild.iconURL({ dynamic: true, size: 128 }) || 'https://cdn.discordapp.com/embed/avatars/0.png'
-      };
+    const config = await getConfig(guildId);
+    if (!config) return res.status(404).json({ error: 'Config not found' });
 
-      const fetchedChannels = await guild.channels.fetch();
-      channels = fetchedChannels
-        .filter(c => c.type === 0) // GuildText
-        .map(c => ({ id: c.id, name: c.name }));
-  } catch (e) {
-      console.error('Guild Fetch Error:', e.message);
+    let guildData = { name: 'Неизвестный сервер', icon: 'https://cdn.discordapp.com/embed/avatars/0.png' };
+    let channels = [];
+    
+    try {
+        const guild = await client.guilds.fetch(guildId);
+        if (guild) {
+            guildData = {
+                name: guild.name,
+                icon: guild.iconURL({ dynamic: true, size: 128 }) || 'https://cdn.discordapp.com/embed/avatars/0.png'
+            };
+
+            const fetchedChannels = await guild.channels.fetch();
+            channels = fetchedChannels
+              .filter(c => c.type === 0) // GuildText
+              .map(c => ({ id: c.id, name: c.name }));
+        }
+    } catch (e) {
+        console.error('Guild Fetch Error:', e.message);
+    }
+
+    // Convert to plain object if it's a Mongoose document
+    const configObj = config.toObject ? config.toObject() : config;
+
+    res.json({ config: configObj, guild: guildData, channels });
+  } catch (err) {
+      console.error('API Config Error:', err);
+      res.status(500).json({ error: 'Internal Server Error' });
   }
-
-  res.json({ config, guild: guildData, channels });
 });
 
 app.get('/api/guild-structure/:guildId', checkAuth, async (req, res) => {
