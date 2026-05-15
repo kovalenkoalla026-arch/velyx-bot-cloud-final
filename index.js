@@ -1183,7 +1183,7 @@ const spamMap = new Map();
 client.on('messageCreate', async message => {
   if (!message.guild || message.author.bot) return;
   
-  const config = getConfig(message.guild.id);
+  const config = await getConfig(message.guild.id);
   if (!config.automod) return;
 
   // Check permissions
@@ -1310,7 +1310,7 @@ client.on('interactionCreate', async interaction => {
 
   if (interaction.isButton()) {
     if (interaction.customId.startsWith('apply_modal_') || interaction.customId === 'open_apply_modal') {
-        const config = getConfig(interaction.guild.id);
+        // config is already awaited in outer scope
         if (!config.recruitment.open) return interaction.reply({ content: 'Набор закрыт.', ephemeral: true });
         
         let panelConfig = null;
@@ -1354,7 +1354,7 @@ client.on('interactionCreate', async interaction => {
           try {
             const user = await client.users.fetch(userId);
             const guild = interaction.guild;
-            const config = getConfig(guild.id);
+            // config is already awaited in outer scope
             
             // 1. Send Default Notification
             let msg = `Поздравляем! Ваша заявка на сервере **${guild.name}** была **принята**.`;
