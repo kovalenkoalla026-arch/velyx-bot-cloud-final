@@ -1,0 +1,2508 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="Content-Security-Policy" content="default-src * 'unsafe-inline' 'unsafe-eval'; script-src * 'unsafe-inline' 'unsafe-eval'; style-src * 'unsafe-inline'; img-src * data: blob:; font-src *; connect-src *;">
+    <title>Velyx | Панель управления</title>
+    <link rel="icon" type="image/png" href="/logo.png">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600;800&display=swap" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script>
+        // Pre-define translations and setLanguage in head to avoid ReferenceErrors
+        const translations = {
+            ru: {
+                title: "Velyx | Панель управления",
+                back_to_servers: "← К списку серверов",
+                nav_rules: "📜 Правила",
+                nav_automod: "🛡️ Авто-мод",
+                nav_logs: "📝 Логи сервера",
+                nav_apps: "📩 Заявки",
+                nav_analytics: "📊 Аналитика",
+                nav_structure: "🛠️ Структура сервера",
+                developed_by: "Разработано",
+                settings_saved: "Настройки сохранены!",
+                changes_warning: "Внимание: у вас есть несохраненные изменения!",
+                btn_save: "Сохранить",
+                btn_reset: "Сбросить",
+                status_configuring: "Настройка",
+                header_analytics: "Аналитика сервера",
+                stat_total_members: "👥 Всего участников",
+                stat_active_today: "🔥 Активность (24ч)",
+                stat_messages: "💬 Сообщений сегодня",
+                header_rules: "Управление правилами",
+                card_templates: "📜 Шаблоны правил",
+                label_template: "Выберите готовый шаблон",
+                placeholder_template: "-- Выберите шаблон --",
+                preview: "👀 Предпросмотр",
+                block: "Блок",
+                label_title: "Заголовок (Title)",
+                label_text: "Текст (Markdown)",
+                placeholder_title: "Заголовок блока...",
+                placeholder_text: "Текст блока...",
+                label_image: "URL Картинки",
+                label_sidebar: "Цвет полоски",
+                btn_save_rules: "Опубликовать правила",
+                btn_remove_block: "Удалить блок",
+                btn_no_sidebar: "Убрать полоску",
+                header_automod: "Автоматическая модерация",
+                card_links: "🛡️ Защита от ссылок",
+                label_invites: "Фильтр приглашений",
+                desc_invites: "Удалять приглашения на другие Discord серверы",
+                label_all_links: "Все ссылки",
+                desc_all_links: "Удалять любые ссылки (http/https)",
+                card_antispam: "⚡ Анти-спам",
+                label_antispam: "Защита от спама",
+                desc_antispam: "Наказывать за отправку слишком большого количества сообщений",
+                card_punishment: "⚖️ Наказание",
+                label_punish_type: "Тип наказания за нарушение",
+                label_mute_duration: "Длительность мута",
+                btn_save_settings: "Сохранить настройки",
+                punish_none: "Только удаление сообщения",
+                punish_timeout: "Тайм-аут (Мут)",
+                punish_ban: "Бан",
+                header_logs: "Логи сервера",
+                card_log_channel: "🆔 Канал для логов",
+                select_channel: "-- Выберите канал --",
+                card_log_events: "🔄 События для логирования",
+                log_msgs: "Сообщения",
+                log_msgs_desc: "Логировать отправку новых сообщений",
+                log_del: "Удаления",
+                log_del_desc: "Логировать удаленные сообщения",
+                log_edit: "Редактирование",
+                log_edit_desc: "Логировать измененные сообщения",
+                log_joins: "Вход участников",
+                log_joins_desc: "Логировать новых пользователей",
+                log_leaves: "Выход участников",
+                log_leaves_desc: "Логировать выход пользователей",
+                log_voice: "Голосовые каналы",
+                log_voice_desc: "Логировать переходы в ГС",
+                header_apps: "Управление заявками",
+                card_app_channel: "🆔 Канал для заявок",
+                card_actions: "📡 Действия",
+                label_panel_chan: "Канал для отправки панели",
+                btn_send_panel: "🚀 Отправить панель",
+                card_rec_status: "📡 Статус набора",
+                label_rec_open: "Прием заявок",
+                desc_rec_open: "Открыть или закрыть набор в команду",
+                card_rec_design: "🖼️ Оформление панели",
+                label_desc: "Описание",
+                placeholder_rec_title: "Напр. 📩 Подача заявок",
+                placeholder_rec_desc: "Введите описание...",
+                card_questions: "❓ Вопросы анкеты (макс. 5)",
+                btn_add_question: "➕ Добавить вопрос",
+                placeholder_q_name: "Название вопроса",
+                q_short: "Короткий",
+                q_paragraph: "Абзац",
+                btn_apply_app: "📩 Подать заявку",
+                app_fallback_title: "📩 Подача заявок",
+                app_fallback_desc: "Нажмите на кнопку ниже, чтобы подать заявку...",
+                label_approve_msg: "Сообщение при одобрении",
+                placeholder_approve_msg: "Напр. Ссылка на чат или важная информация...",
+                label_approve_role: "Роль при одобрении",
+                placeholder_approve_role: "-- Выберите роль --",
+                label_dm_notify: "Уведомление в ЛС",
+                desc_dm_notify: "Отправлять пользователю сообщение о наказании",
+                placeholder_dm_msg: "Вы были наказаны на сервере {guild}. Причина: {reason}",
+                dm_vars_desc: "Доступные переменные:",
+                today_at: "Сегодня, в",
+                header_struct_editor: "🏗️ Конструктор шаблона",
+                desc_struct_editor: "Создайте структуру категорий и каналов, которую бот развернет на сервере.",
+                btn_add_category: "➕ Добавить категорию",
+                btn_apply_struct: "🚀 Применить структуру на сервер",
+                struct_preview: "📂 Предпросмотр структуры"
+            },
+            en: {
+                title: "Velyx | Dashboard",
+                back_to_servers: "← Back to servers",
+                nav_rules: "📜 Rules",
+                nav_automod: "🛡️ Auto-Mod",
+                nav_logs: "📝 Server Logs",
+                nav_apps: "📩 Applications",
+                nav_analytics: "📊 Analytics",
+                nav_structure: "🛠️ Server Structure",
+                developed_by: "Developed by",
+                settings_saved: "Settings saved!",
+                changes_warning: "Attention: you have unsaved changes!",
+                btn_save: "Save Changes",
+                btn_reset: "Reset",
+                status_configuring: "Configuring",
+                header_analytics: "Server Analytics",
+                stat_total_members: "👥 Total Members",
+                stat_active_today: "🔥 Active (24h)",
+                stat_messages: "💬 Messages Today",
+                header_rules: "Rules Management",
+                card_templates: "📜 Rule Templates",
+                label_template: "Select a ready-to-use template",
+                placeholder_template: "-- Select template --",
+                preview: "👀 Preview",
+                block: "Block",
+                label_title: "Title",
+                label_text: "Text (Markdown)",
+                placeholder_title: "Block title...",
+                placeholder_text: "Block text...",
+                label_image: "Image URL",
+                label_sidebar: "Sidebar Color",
+                btn_save_rules: "Publish Rules",
+                btn_remove_block: "Remove block",
+                btn_no_sidebar: "Remove sidebar",
+                header_automod: "Auto Moderation",
+                card_links: "🛡️ Link Protection",
+                label_invites: "Invite Filter",
+                desc_invites: "Delete invites to other Discord servers",
+                label_all_links: "All Links",
+                desc_all_links: "Delete any links (http/https)",
+                card_antispam: "⚡ Anti-Spam",
+                label_antispam: "Spam Protection",
+                desc_antispam: "Punish users for sending too many messages",
+                card_punishment: "⚖️ Punishment",
+                label_punish_type: "Punishment type for violation",
+                label_mute_duration: "Mute duration",
+                btn_save_settings: "Save Settings",
+                punish_none: "Message deletion only",
+                punish_timeout: "Timeout (Mute)",
+                punish_ban: "Ban",
+                header_logs: "Server Logs",
+                card_log_channel: "🆔 Log Channel",
+                select_channel: "-- Select channel --",
+                card_log_events: "🔄 Logging Events",
+                log_msgs: "Messages",
+                log_msgs_desc: "Log new messages",
+                log_del: "Deletions",
+                log_del_desc: "Log deleted messages",
+                log_edit: "Edits",
+                log_edit_desc: "Log edited messages",
+                log_joins: "Member Joins",
+                log_joins_desc: "Log new members",
+                log_leaves: "Member Leaves",
+                log_leaves_desc: "Log members leaving",
+                log_voice: "Voice Channels",
+                log_voice_desc: "Log voice state changes",
+                header_apps: "Applications Management",
+                card_app_channel: "🆔 Apps Channel",
+                card_actions: "📡 Actions",
+                label_panel_chan: "Channel to send panel",
+                btn_send_panel: "🚀 Send Recruitment Panel",
+                card_rec_status: "📡 Recruitment Status",
+                label_rec_open: "Applications Open",
+                desc_rec_open: "Open or close team recruitment",
+                card_rec_design: "🖼️ Panel Design",
+                label_desc: "Description",
+                placeholder_rec_title: "e.g. 📩 Applications",
+                placeholder_rec_desc: "Enter description...",
+                card_questions: "❓ Form Questions (max 5)",
+                btn_add_question: "➕ Add question",
+                placeholder_q_name: "Question title",
+                q_short: "Short",
+                q_paragraph: "Paragraph",
+                btn_apply_app: "📩 Apply Now",
+                app_fallback_title: "📩 Applications",
+                app_fallback_desc: "Click the button below to apply...",
+                label_approve_msg: "Approval Message",
+                placeholder_approve_msg: "e.g. Chat link or important info...",
+                label_approve_role: "Approval Role",
+                placeholder_approve_role: "-- Select Role --",
+                label_dm_notify: "DM Notification",
+                desc_dm_notify: "Send a punishment message to the user",
+                placeholder_dm_msg: "You were punished in {guild}. Reason: {reason}",
+                dm_vars_desc: "Available variables:",
+                today_at: "Today at",
+                header_struct_editor: "🏗️ Template Designer",
+                desc_struct_editor: "Design categories and channels that the bot will create on the server.",
+                btn_add_category: "➕ Add Category",
+                btn_apply_struct: "🚀 Apply Structure to Server",
+                struct_preview: "📂 Structure Preview"
+            }
+        };
+
+        window.setLanguage = function(lang) {
+            localStorage.setItem('lang', lang);
+            const t = translations[lang];
+            if (!t) return;
+
+            document.querySelectorAll('[data-i18n]').forEach(el => {
+                try {
+                    const key = el.getAttribute('data-i18n');
+                    if (!t[key]) return;
+                    if (el.tagName === 'INPUT' || el.tagName === 'TEXTAREA') {
+                        el.placeholder = t[key];
+                    } else {
+                        el.innerText = t[key];
+                    }
+                } catch(e) {}
+            });
+
+            document.title = t.title;
+            const btnRu = document.getElementById('btn-ru');
+            const btnEn = document.getElementById('btn-en');
+            if (btnRu) btnRu.classList.toggle('active', lang === 'ru');
+            if (btnEn) btnEn.classList.toggle('active', lang === 'en');
+
+            if (typeof renderQuestions === 'function') renderQuestions();
+            if (typeof updateRecruitmentPreview === 'function') updateRecruitmentPreview();
+            if (typeof renderRuleEmbeds === 'function') renderRuleEmbeds();
+            if (typeof updateRulesPreview === 'function') updateRulesPreview();
+        };
+    </script>
+    <style>
+        :root {
+            --bg-dark: #0f1012;
+            --bg-panel: #1a1c1e;
+            --bg-card: #242629;
+            --accent: #7289da;
+            --accent-hover: #5b6eae;
+            --text-main: #ffffff;
+            --text-dim: #b0b3b8;
+            --danger: #f04747;
+            --success: #43b581;
+            --transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Outfit', sans-serif;
+        }
+
+        body {
+            background-color: var(--bg-dark);
+            color: var(--text-main);
+            display: flex;
+            height: 100vh;
+            overflow: hidden;
+        }
+
+        /* Sidebar */
+        .sidebar {
+            width: 280px;
+            background-color: var(--bg-panel);
+            padding: 40px 20px;
+            display: flex;
+            flex-direction: column;
+            border-right: 1px solid rgba(255,255,255,0.05);
+        }
+
+        /* Server Profile Card */
+        .server-profile {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            padding: 12px;
+            background: rgba(255, 255, 255, 0.03);
+            border-radius: 12px;
+            margin-bottom: 30px;
+            border: 1px solid rgba(255, 255, 255, 0.05);
+            transition: transform 0.2s;
+        }
+        .server-profile:hover {
+            transform: translateY(-2px);
+            background: rgba(255, 255, 255, 0.05);
+        }
+        .server-profile img {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            object-fit: cover;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.3);
+        }
+        .server-profile-info {
+            flex: 1;
+            min-width: 0;
+        }
+        .server-profile-name {
+            font-weight: 700;
+            font-size: 14px;
+            color: #fff;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+        .server-profile-status {
+            font-size: 11px;
+            color: var(--text-dim);
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .logo {
+            font-size: 24px;
+            font-weight: 800;
+            margin-bottom: 50px;
+            color: var(--accent);
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .nav-item {
+            padding: 14px 20px;
+            border-radius: 12px;
+            cursor: pointer;
+            margin-bottom: 8px;
+            color: var(--text-dim);
+            transition: var(--transition);
+            font-weight: 500;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .nav-item:hover {
+            background: rgba(255,255,255,0.03);
+            color: var(--text-main);
+        }
+
+        .nav-item.active {
+            background: var(--accent);
+            color: white;
+            box-shadow: 0 8px 20px rgba(114, 137, 218, 0.3);
+        }
+
+        /* Main Content */
+        .main-content {
+            flex: 1;
+            padding: 60px;
+            overflow-y: auto;
+            position: relative;
+        }
+
+        h1 {
+            font-size: 36px;
+            margin-bottom: 40px;
+            font-weight: 800;
+        }
+
+        .card {
+            background-color: var(--bg-card);
+            border-radius: 24px;
+            padding: 30px;
+            margin-bottom: 30px;
+            border: 1px solid rgba(255,255,255,0.05);
+            box-shadow: 0 20px 40px rgba(0,0,0,0.2);
+            transition: var(--transition);
+        }
+
+        .card:hover {
+            transform: translateY(-5px);
+            border-color: rgba(114, 137, 218, 0.2);
+        }
+
+        .card-header {
+            font-size: 20px;
+            font-weight: 600;
+            margin-bottom: 25px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            color: var(--accent);
+        }
+
+        /* Forms */
+        .form-group {
+            margin-bottom: 20px;
+        }
+
+        label {
+            display: block;
+            font-size: 14px;
+            color: var(--text-dim);
+            margin-bottom: 10px;
+            font-weight: 500;
+        }
+
+        input[type="text"], textarea, select {
+            width: 100%;
+            background: var(--bg-panel);
+            border: 1px solid rgba(255,255,255,0.1);
+            border-radius: 12px;
+            padding: 14px 20px;
+            color: white;
+            font-size: 16px;
+            outline: none;
+            transition: var(--transition);
+        }
+
+        input:focus, textarea:focus, select:focus {
+            border-color: var(--accent);
+            box-shadow: 0 0 0 3px rgba(114, 137, 218, 0.1);
+        }
+
+        /* Toggles */
+        .setting-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 12px 0;
+            border-bottom: 1px solid rgba(255,255,255,0.05);
+        }
+
+        .setting-item:last-child {
+            border-bottom: none;
+        }
+
+        .switch {
+            position: relative;
+            display: inline-block;
+            width: 44px;
+            height: 24px;
+        }
+
+        .switch input {
+            opacity: 0;
+            width: 0;
+            height: 0;
+        }
+
+        .slider {
+            position: absolute;
+            cursor: pointer;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background-color: #3f4147;
+            transition: .4s;
+            border-radius: 24px;
+        }
+
+        .slider:before {
+            position: absolute;
+            content: "";
+            height: 18px;
+            width: 18px;
+            left: 3px;
+            bottom: 3px;
+            background-color: white;
+            transition: .4s;
+            border-radius: 50%;
+        }
+
+        input:checked + .slider {
+            background-color: var(--success);
+        }
+
+        input:checked + .slider:before {
+            transform: translateX(20px);
+        }
+
+        /* Language Switcher */
+        .lang-switcher {
+            display: flex;
+            gap: 4px;
+            background: rgba(255, 255, 255, 0.05);
+            padding: 4px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .lang-btn {
+            flex: 1;
+            padding: 6px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 11px;
+            font-weight: 700;
+            transition: all 0.2s;
+            color: var(--text-dim);
+            border: none;
+            background: transparent;
+            text-transform: uppercase;
+        }
+
+        .lang-btn:hover {
+            color: #fff;
+            background: rgba(255, 255, 255, 0.05);
+        }
+
+        .lang-btn.active {
+            background: var(--accent);
+            color: #fff;
+        }
+
+        .lang-btn:hover {
+            color: #fff;
+            background: rgba(255, 255, 255, 0.05);
+        }
+
+        .lang-btn.active {
+            background: var(--accent);
+            color: #fff;
+            box-shadow: 0 4px 15px rgba(88, 101, 242, 0.3);
+        }
+
+        /* Save Button */
+        .save-bar {
+            position: fixed;
+            bottom: 30px;
+            right: 60px;
+            display: flex;
+            gap: 15px;
+            background: var(--bg-panel);
+            padding: 15px 30px;
+            border-radius: 20px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.5);
+            border: 1px solid rgba(255,255,255,0.1);
+            transform: translateY(100px);
+            transition: var(--transition);
+            z-index: 1000;
+        }
+
+        .save-bar.visible {
+            transform: translateY(0);
+        }
+
+        .btn {
+            padding: 12px 25px;
+            border-radius: 12px;
+            border: none;
+            cursor: pointer;
+            font-weight: 600;
+            transition: var(--transition);
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .btn-primary {
+            background: var(--accent);
+            color: white;
+        }
+
+        .btn-primary:hover {
+            background: var(--accent-hover);
+            transform: scale(1.05);
+        }
+
+        .btn-danger {
+            background: var(--danger);
+            color: white;
+        }
+
+        .btn-ghost {
+            background: transparent;
+            color: var(--text-dim);
+        }
+
+        /* Sections */
+        .content-section {
+            display: none;
+        }
+
+        .content-section.active {
+            display: block;
+            animation: fadeIn 0.4s ease-out;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        /* Toast */
+        #toast {
+            position: fixed;
+            top: 30px;
+            left: 50%;
+            transform: translateX(-50%) translateY(-100px);
+            background: var(--success);
+            padding: 12px 30px;
+            border-radius: 50px;
+            color: white;
+            font-weight: 600;
+            box-shadow: 0 10px 20px rgba(0,0,0,0.3);
+            transition: var(--transition);
+            z-index: 9999;
+        }
+
+        #toast.show {
+            transform: translateX(-50%) translateY(0);
+        }
+
+        .question-row select {
+            flex: 1;
+        }
+
+        /* Mobile Responsive */
+        .menu-toggle {
+            display: none;
+            position: fixed;
+            top: 20px;
+            left: 20px;
+            z-index: 1001;
+            background: var(--accent);
+            color: white;
+            border: none;
+            width: 45px;
+            height: 45px;
+            border-radius: 12px;
+            cursor: pointer;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.3);
+            font-size: 20px;
+            align-items: center;
+            justify-content: center;
+        }
+
+        @media (max-width: 992px) {
+            body {
+                flex-direction: column;
+                height: auto;
+                overflow: auto;
+            }
+
+            .sidebar {
+                position: fixed;
+                left: -280px;
+                top: 0;
+                bottom: 0;
+                z-index: 1000;
+                transition: var(--transition);
+                box-shadow: 20px 0 50px rgba(0,0,0,0.5);
+            }
+
+            .sidebar.open {
+                left: 0;
+            }
+
+            .sidebar-overlay {
+                display: none;
+                position: fixed;
+                top: 0;
+                left: 0;
+                right: 0;
+                bottom: 0;
+                background: rgba(0,0,0,0.5);
+                backdrop-filter: blur(5px);
+                z-index: 999;
+            }
+
+            .sidebar-overlay.visible {
+                display: block;
+            }
+
+            .menu-toggle {
+                display: flex;
+            }
+
+            .main-content {
+                padding: 80px 20px 100px 20px;
+            }
+
+            h1 {
+                font-size: 28px;
+                margin-top: 20px;
+            }
+
+            .card {
+                padding: 20px;
+                border-radius: 18px;
+            }
+
+            .save-bar {
+                left: 20px;
+                right: 20px;
+                bottom: 20px;
+                padding: 12px 20px;
+                justify-content: center;
+            }
+
+            .btn {
+                padding: 10px 18px;
+                font-size: 14px;
+            }
+
+            .question-row {
+                flex-direction: column;
+                gap: 10px;
+            }
+
+            .question-row input, .question-row select {
+                width: 100%;
+            }
+            
+            .preview-container {
+                display: none; /* Hide preview on small mobile to save space, or stack it */
+            }
+            
+            #rulesEmbedsContainer .card-header {
+                flex-direction: column;
+                align-items: flex-start;
+                gap: 10px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <button class="menu-toggle" onclick="toggleSidebar()">☰</button>
+    <div class="sidebar-overlay" onclick="toggleSidebar()"></div>
+
+    <div id="toast" data-i18n="settings_saved">Настройки сохранены!</div>
+
+    <div class="sidebar">
+        <div class="lang-switcher">
+            <button class="lang-btn active" onclick="setLanguage('ru')" id="btn-ru">RU</button>
+            <button class="lang-btn" onclick="setLanguage('en')" id="btn-en">EN</button>
+        </div>
+        <!-- Server Profile Section -->
+        <div class="server-profile" id="serverProfile">
+            <img id="serverIcon" src="https://cdn.discordapp.com/embed/avatars/0.png" alt="Server Icon">
+            <div class="server-profile-info">
+                <div class="server-profile-name" id="serverName">...</div>
+                <div class="server-profile-status" data-i18n="status_configuring">Настройка</div>
+            </div>
+        </div>
+        <script>
+            // Isolated Survival Script for Profile
+            (async function() {
+                const sid = new URLSearchParams(window.location.search).get('server');
+                if (!sid) return;
+                try {
+                    const r = await fetch('/api/config/' + sid);
+                    const d = await r.json();
+                    if (d && d.guild) {
+                        document.getElementById('serverName').innerText = d.guild.name;
+                        document.getElementById('serverIcon').src = d.guild.icon || 'https://cdn.discordapp.com/embed/avatars/0.png';
+                    }
+                } catch(e) { console.error('Profile Survival Error:', e); }
+            })();
+        </script>
+
+        <div style="padding: 15px 20px 5px 20px;">
+            <a href="/servers-page" style="color: var(--text-dim); text-decoration: none; font-size: 12px; display: flex; align-items: center; gap: 8px; transition: 0.2s;" onmouseover="this.style.color='white'" onmouseout="this.style.color='var(--text-dim)'">
+                <span data-i18n="back_to_servers">← К списку серверов</span>
+            </a>
+        </div>
+        <div class="logo">
+            <img src="/logo.png" style="width: 32px; height: 32px; border-radius: 50%; object-fit: cover;">
+            Velyx
+        </div>
+        <div class="nav-item active" data-target="rules">
+            <span data-i18n="nav_rules">📜 Правила</span>
+        </div>
+        <div class="nav-item" data-target="automod">
+            <span data-i18n="nav_automod">🛡️ Авто-мод</span> <span style="background: #5865f2; color: #fff; font-size: 9px; padding: 1px 4px; border-radius: 4px; margin-left: 5px; font-weight: 700; vertical-align: middle;">BETA</span>
+        </div>
+        <div class="nav-item" data-target="logs">
+            <span data-i18n="nav_logs">📝 Логи сервера</span>
+        </div>
+        <div class="nav-item" data-target="analytics">
+            <span data-i18n="nav_analytics">📊 Аналитика</span>
+        </div>
+        <div class="nav-item" data-target="recruitment">
+            <span data-i18n="nav_apps">📩 Заявки</span>
+        </div>
+        <div class="nav-item" style="margin-top: auto; border-top: 1px solid rgba(255,255,255,0.05);" data-target="setup">
+            <span data-i18n="nav_structure">🛠️ Структура сервера</span> <span style="background: #5865f2; color: #fff; font-size: 9px; padding: 1px 4px; border-radius: 4px; margin-left: 5px; font-weight: 700; vertical-align: middle;">BETA</span>
+        </div>
+        <div style="padding: 15px 20px; font-size: 11px; color: var(--text-dim); text-align: center; border-top: 1px solid rgba(255,255,255,0.05);">
+            <span data-i18n="developed_by">Разработано</span> <span style="color: #5865f2; font-weight: 600;">Senk</span>
+        </div>
+    </div>
+
+    <div class="main-content">
+        
+
+        <div id="logs" class="content-section">
+            <h1 data-i18n="header_logs">Логи сервера</h1>
+            <div class="card">
+                <div class="card-header" data-i18n="card_log_channel">🆔 Канал для логов</div>
+                <div class="form-group">
+                    <select id="logChannelId">
+                        <option value="" data-i18n="select_channel">-- Выберите канал --</option>
+                    </select>
+                </div>
+            </div>
+            <div class="card">
+                <div class="card-header" data-i18n="card_log_events">🔄 События для логирования</div>
+                
+                <div class="setting-item">
+                    <div>
+                        <div style="font-weight: 600;" data-i18n="log_msgs">Сообщения</div>
+                        <div style="font-size: 12px; color: var(--text-dim);" data-i18n="log_msgs_desc">Логировать отправку новых сообщений</div>
+                    </div>
+                    <label class="switch">
+                        <input type="checkbox" id="logMessages">
+                        <span class="slider"></span>
+                    </label>
+                </div>
+
+                <div class="setting-item">
+                    <div>
+                        <div style="font-weight: 600;" data-i18n="log_del">Удаления</div>
+                        <div style="font-size: 12px; color: var(--text-dim);" data-i18n="log_del_desc">Логировать удаленные сообщения</div>
+                    </div>
+                    <label class="switch">
+                        <input type="checkbox" id="logDeletions">
+                        <span class="slider"></span>
+                    </label>
+                </div>
+
+                <div class="setting-item">
+                    <div>
+                        <div style="font-weight: 600;" data-i18n="log_edit">Редактирование</div>
+                        <div style="font-size: 12px; color: var(--text-dim);" data-i18n="log_edit_desc">Логировать измененные сообщения</div>
+                    </div>
+                    <label class="switch">
+                        <input type="checkbox" id="logEdits">
+                        <span class="slider"></span>
+                    </label>
+                </div>
+
+                <div class="setting-item">
+                    <div>
+                        <div style="font-weight: 600;" data-i18n="log_joins">Вход участников</div>
+                        <div style="font-size: 12px; color: var(--text-dim);" data-i18n="log_joins_desc">Логировать новых пользователей</div>
+                    </div>
+                    <label class="switch">
+                        <input type="checkbox" id="logJoins">
+                        <span class="slider"></span>
+                    </label>
+                </div>
+
+                <div class="setting-item">
+                    <div>
+                        <div style="font-weight: 600;" data-i18n="log_leaves">Выход участников</div>
+                        <div style="font-size: 12px; color: var(--text-dim);" data-i18n="log_leaves_desc">Логировать выход пользователей</div>
+                    </div>
+                    <label class="switch">
+                        <input type="checkbox" id="logLeaves">
+                        <span class="slider"></span>
+                    </label>
+                </div>
+
+                <div class="setting-item">
+                    <div>
+                        <div style="font-weight: 600;" data-i18n="log_voice">Голосовые каналы</div>
+                        <div style="font-size: 12px; color: var(--text-dim);" data-i18n="log_voice_desc">Логировать переходы в ГС</div>
+                    </div>
+                    <label class="switch">
+                        <input type="checkbox" id="logVoice">
+                        <span class="slider"></span>
+                    </label>
+                </div>
+            </div>
+        </div>
+
+        <div id="analytics" class="content-section">
+            <h1 data-i18n="header_analytics" style="background: linear-gradient(90deg, #fff, #7289da); -webkit-background-clip: text; -webkit-text-fill-color: transparent; margin-bottom: 40px;">Аналитика сервера</h1>
+            
+            <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 25px; margin-bottom: 40px;">
+                <!-- Карточка 1: Участники -->
+                <div class="card" style="margin-bottom: 0; padding: 25px; position: relative; overflow: hidden; background: linear-gradient(145deg, #1a1c1e, #242629); border: 1px solid rgba(114, 137, 218, 0.3);">
+                    <div style="position: absolute; top: -20px; right: -20px; width: 100px; height: 100px; background: rgba(114, 137, 218, 0.1); border-radius: 50%; filter: blur(30px);"></div>
+                    <div style="font-size: 12px; color: #7289da; font-weight: 800; text-transform: uppercase; letter-spacing: 1px;" data-i18n="stat_total_members">👥 Всего участников</div>
+                    <div style="font-size: 42px; font-weight: 800; margin-top: 15px; color: #fff; text-shadow: 0 0 20px rgba(114,137,218,0.5);" id="statTotalMembers">0</div>
+                    <div style="font-size: 11px; color: var(--text-dim); margin-top: 5px;">+12% за неделю</div>
+                </div>
+
+                <!-- Карточка 2: Активность -->
+                <div class="card" style="margin-bottom: 0; padding: 25px; position: relative; overflow: hidden; background: linear-gradient(145deg, #1a1c1e, #242629); border: 1px solid rgba(67, 181, 129, 0.3);">
+                    <div style="position: absolute; top: -20px; right: -20px; width: 100px; height: 100px; background: rgba(67, 181, 129, 0.1); border-radius: 50%; filter: blur(30px);"></div>
+                    <div style="font-size: 12px; color: #43b581; font-weight: 800; text-transform: uppercase; letter-spacing: 1px;" data-i18n="stat_active_today">🔥 Активность (24ч)</div>
+                    <div style="font-size: 42px; font-weight: 800; margin-top: 15px; color: #fff; text-shadow: 0 0 20px rgba(67,181,129,0.5);" id="statActiveUsers">0</div>
+                    <div style="font-size: 11px; color: var(--text-dim); margin-top: 5px;">Стабильный онлайн</div>
+                </div>
+
+                <!-- Карточка 3: Сообщения -->
+                <div class="card" style="margin-bottom: 0; padding: 25px; position: relative; overflow: hidden; background: linear-gradient(145deg, #1a1c1e, #242629); border: 1px solid rgba(255, 204, 0, 0.3);">
+                    <div style="position: absolute; top: -20px; right: -20px; width: 100px; height: 100px; background: rgba(255, 204, 0, 0.1); border-radius: 50%; filter: blur(30px);"></div>
+                    <div style="font-size: 12px; color: #ffcc00; font-weight: 800; text-transform: uppercase; letter-spacing: 1px;" data-i18n="stat_messages">💬 Сообщений сегодня</div>
+                    <div style="font-size: 42px; font-weight: 800; margin-top: 15px; color: #fff; text-shadow: 0 0 20px rgba(255,204,0,0.5);" id="statMessagesToday">0</div>
+                    <div style="font-size: 11px; color: var(--text-dim); margin-top: 5px;">Пик в 18:00</div>
+                </div>
+            </div>
+
+            <!-- Live Stats Config -->
+            <div class="card" style="padding: 30px; background: linear-gradient(145deg, #1a1c1e, #1e2023); border: 1px solid rgba(114, 137, 218, 0.2); margin-bottom: 40px;">
+                <div style="display: flex; align-items: center; gap: 15px; margin-bottom: 20px;">
+                    <div style="font-size: 28px;">📡</div>
+                    <div>
+                        <h3 style="margin: 0; color: #fff;">Живой мониторинг в Discord</h3>
+                        <p style="margin: 5px 0 0 0; font-size: 13px; color: var(--text-dim);">Бот отправит сообщение с авто-обновляемой статистикой в выбранный канал.</p>
+                    </div>
+                </div>
+                
+                <div style="display: flex; gap: 20px; align-items: flex-end; flex-wrap: wrap;">
+                    <div class="form-group" style="flex: 1; min-width: 250px; margin-bottom: 0;">
+                        <label>Выберите канал для мониторинга</label>
+                        <select id="liveStatsChannelId">
+                            <option value="">-- Загрузка каналов... --</option>
+                        </select>
+                    </div>
+                    <button class="btn btn-primary" onclick="setupLiveStats()" style="height: 42px; display: flex; align-items: center; gap: 8px;">
+                        <span>🚀</span> Запустить / Обновить
+                    </button>
+                </div>
+                <div id="liveStatsStatus" style="margin-top: 15px; font-size: 13px; display: none; padding: 10px; border-radius: 8px; background: rgba(114,137,218,0.1); color: #7289da; border: 1px solid rgba(114,137,218,0.2);"></div>
+            </div>
+
+            <div class="card" style="padding: 30px; background: #1a1c1e; border: 1px solid rgba(255,255,255,0.05);">
+                <div class="card-header" style="margin-bottom: 30px;">
+                    <span style="font-size: 24px;">📈</span> График активности сообщений
+                </div>
+                <div style="height: 350px; width: 100%; position: relative;">
+                    <canvas id="activityChart"></canvas>
+                </div>
+            </div>
+        </div>
+
+        <div id="recruitment" class="content-section">
+            <h1 data-i18n="header_apps">Управление заявками</h1>
+            
+            <div style="display: flex; gap: 30px; align-items: flex-start;">
+                <!-- Left: Editor -->
+                <div style="flex: 1;">
+                    <div class="card">
+                        <div class="card-header" data-i18n="card_app_channel">🆔 Канал для заявок</div>
+                        <div class="form-group">
+                            <select id="adminChannelId">
+                                <option value="" data-i18n="select_channel">-- Выберите канал --</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <div class="card">
+                        <div class="card-header" data-i18n="card_actions">📡 Действия</div>
+                        <div style="display: flex; gap: 15px;">
+                            <div class="form-group" style="flex: 1; margin-bottom: 0;">
+                                <label data-i18n="label_panel_chan">Канал для отправки панели</label>
+                                <select id="panelChannelId">
+                                    <option value="" data-i18n="select_channel">-- Выберите канал --</option>
+                                </select>
+                            </div>
+                            <button class="btn btn-primary" onclick="sendPanel()" style="margin-top: 25px;" data-i18n="btn_send_panel">
+                                🚀 Отправить панель
+                            </button>
+                        </div>
+                    </div>
+
+                    <div class="card">
+                        <div class="card-header" data-i18n="card_rec_status">📡 Статус набора</div>
+                        <div class="setting-item">
+                            <div>
+                                <div style="font-weight: 600;" data-i18n="label_rec_open">Прием заявок</div>
+                                <div style="font-size: 12px; color: var(--text-dim);" data-i18n="desc_rec_open">Открыть или закрыть набор в команду</div>
+                            </div>
+                            <label class="switch">
+                                <input type="checkbox" id="recOpen" onchange="updateRecruitmentPreview(); checkChanges();">
+                                <span class="slider"></span>
+                            </label>
+                        </div>
+                    </div>
+                    <div class="card">
+                        <div class="card-header">🤝 Действия при одобрении</div>
+                        <div class="form-group">
+                            <label data-i18n="label_approve_msg">Сообщение при одобрении</label>
+                            <textarea id="recApproveMsg" rows="3" data-i18n="placeholder_approve_msg" placeholder="Напр. Ссылка на чат или важная информация..."></textarea>
+                        </div>
+                        <div class="form-group">
+                            <label data-i18n="label_approve_role">Роль при одобрении</label>
+                            <select id="recApproveRole">
+                                <option value="" data-i18n="placeholder_approve_role">-- Выберите роль --</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <div class="card">
+                        <div class="card-header" data-i18n="card_rec_design">🖼️ Оформление панели</div>
+                        <div class="form-group">
+                            <label data-i18n="label_title">Заголовок (Title)</label>
+                            <input type="text" id="recTitle" data-i18n="placeholder_rec_title" placeholder="Напр. 📩 Подача заявок" oninput="updateRecruitmentPreview()">
+                        </div>
+                        <div class="form-group">
+                            <label data-i18n="label_desc">Описание</label>
+                            <textarea id="recDesc" rows="3" data-i18n="placeholder_rec_desc" placeholder="Введите описание..." oninput="updateRecruitmentPreview()"></textarea>
+                        </div>
+                        
+                        <div style="display: flex; gap: 20px; align-items: flex-start; flex-wrap: wrap;">
+                            <div class="form-group" style="flex: 2; min-width: 250px;">
+                                <label data-i18n="label_image">URL Картинки (Опционально)</label>
+                                <input type="text" id="recImageUrl" placeholder="https://..." oninput="updateRecruitmentPreview()">
+                            </div>
+                            
+                            <div class="form-group" style="flex: 1; min-width: 150px;">
+                                <label data-i18n="label_sidebar">Цвет полоски</label>
+                                <div style="display: flex; gap: 10px; align-items: center;">
+                                    <input type="color" id="recColor" style="width: 45px; height: 45px; padding: 0; border: none; border-radius: 8px; cursor: pointer; background: transparent;" oninput="updateRecruitmentPreview()">
+                                    <button type="button" class="btn" style="padding: 10px; font-size: 14px; background: #2f3136; flex: 1;" onclick="document.getElementById('recColor').value = '#2b2d31'; updateRecruitmentPreview(); checkChanges();" data-i18n="btn_no_sidebar">Убрать полоску</button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="card">
+                        <div class="card-header" data-i18n="card_questions">❓ Вопросы анкеты (макс. 5)</div>
+                        <div id="questionsContainer">
+                            <!-- Questions will be here -->
+                        </div>
+                        <button class="btn btn-ghost" onclick="addQuestion()" style="margin-top: 10px; width: 100%; justify-content: center;" data-i18n="btn_add_question">
+                            ➕ Добавить вопрос
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Right: Sticky Preview -->
+                <div style="width: 450px; position: sticky; top: 20px;">
+                    <div class="card" style="padding: 0; overflow: hidden; border: none;">
+                        <div class="card-header" style="padding: 20px 20px 0 20px;">👀 Предпросмотр</div>
+                        <div style="background: #313338; padding: 20px; font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;">
+                            <div style="display: flex; gap: 12px;">
+                                <img src="https://cdn.discordapp.com/embed/avatars/0.png" id="prevBotAvatar" style="width: 40px; height: 40px; border-radius: 50%;">
+                                <div style="flex: 1;">
+                                    <div style="display: flex; align-items: center; gap: 6px; margin-bottom: 4px;">
+                                        <span id="prevBotName" style="font-weight: 500; color: #fff; font-size: 14px;">Recruitment Bot</span>
+                                        <span style="background: #5865f2; color: #fff; font-size: 10px; padding: 1px 4px; border-radius: 3px; font-weight: 500;">APP</span>
+                                        <span style="color: #b5bac1; font-size: 12px;">Сегодня, в 23:30</span>
+                                    </div>
+                                    
+                                    <div id="prevRecEmbed" style="background: #2b2d31; border: 1px solid #1e1f22; border-left: 4px solid #2b2d31; border-radius: 4px; padding: 12px 16px; max-width: 520px; position: relative; margin-bottom: 8px; overflow-wrap: break-word; word-break: break-word;">
+                                        <div id="prevRecTitle" style="color: #fff; font-weight: 600; font-size: 16px; margin-bottom: 8px;"></div>
+                                        <div id="prevRecDesc" style="color: #dbdee1; font-size: 14px; white-space: pre-wrap; line-height: 1.375;"></div>
+                                        <img id="prevRecImage" src="" style="display: none; margin-top: 16px; border-radius: 4px; max-width: 100%; max-height: 300px; object-fit: contain;" onerror="this.style.display='none'">
+                                    </div>
+
+                                    <div style="display: flex; gap: 8px;">
+                                        <div id="prevRecButton" style="background: #5865f2; color: #fff; padding: 6px 12px; border-radius: 3px; font-size: 14px; display: flex; align-items: center; gap: 6px; cursor: pointer; user-select: none;">
+                                            <span>📩 Подать заявку</span>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div id="automod" class="content-section">
+            <h1 data-i18n="header_automod">Автоматическая модерация</h1>
+            
+            <div class="card">
+                <div class="card-header" data-i18n="card_links">🛡️ Защита от ссылок</div>
+                <div class="setting-item">
+                    <div>
+                        <div style="font-weight: 600;" data-i18n="label_invites">Фильтр приглашений</div>
+                        <div style="font-size: 12px; color: var(--text-dim);" data-i18n="desc_invites">Удалять приглашения на другие Discord серверы</div>
+                    </div>
+                    <label class="switch">
+                        <input type="checkbox" id="modAntiInvite" onchange="checkChanges()">
+                        <span class="slider"></span>
+                    </label>
+                </div>
+                <div class="setting-item">
+                    <div>
+                        <div style="font-weight: 600;" data-i18n="label_all_links">Все ссылки</div>
+                        <div style="font-size: 12px; color: var(--text-dim);" data-i18n="desc_all_links">Удалять любые ссылки (http/https)</div>
+                    </div>
+                    <label class="switch">
+                        <input type="checkbox" id="modAntiLink" onchange="checkChanges()">
+                        <span class="slider"></span>
+                    </label>
+                </div>
+            </div>
+
+            <div class="card">
+                <div class="card-header" data-i18n="card_antispam">⚡ Анти-спам</div>
+                <div class="setting-item">
+                    <div>
+                        <div style="font-weight: 600;" data-i18n="label_antispam">Защита от спама</div>
+                        <div style="font-size: 12px; color: var(--text-dim);" data-i18n="desc_antispam">Наказывать за отправку слишком большого количества сообщений</div>
+                    </div>
+                    <label class="switch">
+                        <input type="checkbox" id="modAntiSpam" onchange="checkChanges()">
+                        <span class="slider"></span>
+                    </label>
+                </div>
+            </div>
+
+            <div class="card">
+                <div class="card-header" data-i18n="card_punishment">⚖️ Наказание</div>
+                <div class="form-group">
+                    <label data-i18n="label_punish_type">Тип наказания за нарушение</label>
+                    <select id="modPunishment" onchange="toggleMuteDuration(); checkChanges();">
+                        <option value="none" data-i18n="punish_none">Только удаление сообщения</option>
+                        <option value="mute" data-i18n="punish_timeout">Тайм-аут (Мут)</option>
+                        <option value="ban" data-i18n="punish_ban">Бан</option>
+                    </select>
+                </div>
+                
+                <div id="muteDurationContainer" class="form-group" style="display: none;">
+                    <label data-i18n="label_mute_duration">Длительность мута</label>
+                    <select id="modMuteDuration" onchange="checkChanges()">
+                        <option value="60">1 минута</option>
+                        <option value="300">5 минут</option>
+                        <option value="600">10 минут</option>
+                        <option value="3600">1 час</option>
+                        <option value="86400">1 день</option>
+                        <option value="604800">1 неделя</option>
+                    </select>
+                </div>
+
+                <div class="setting-item">
+                    <div>
+                        <div style="font-weight: 600;">Уведомление в ЛС</div>
+                        <div style="font-size: 12px; color: var(--text-dim);">Отправлять пользователю сообщение о наказании</div>
+                    </div>
+                    <label class="switch">
+                        <input type="checkbox" id="modSendDm" onchange="toggleDmText(); checkChanges();">
+                        <span class="slider"></span>
+                    </label>
+                </div>
+
+                <div id="dmTextContainer" class="form-group" style="display: none;">
+                    <label data-i18n="label_dm_notify">Текст сообщения в ЛС</label>
+                    <textarea id="modDmMessage" rows="3" data-i18n="placeholder_dm_msg" placeholder="Вы были наказаны на сервере {guild}. Причина: {reason}" oninput="checkChanges()"></textarea>
+                    <div style="font-size: 11px; color: var(--text-dim); margin-top: 5px;">
+                        <span data-i18n="dm_vars_desc">Доступные переменные:</span> <code>{guild}</code>, <code>{reason}</code>.
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div id="rules" class="content-section active">
+            <h1 data-i18n="header_rules">Управление правилами</h1>
+            
+            <div style="display: flex; gap: 30px; align-items: flex-start;">
+                <!-- Left: Editor -->
+                <div style="flex: 1;">
+                    <div class="card">
+                        <div class="card-header" data-i18n="card_templates">📋 Шаблоны правил</div>
+                        <div class="form-group">
+                            <label data-i18n="label_template">Выберите готовый шаблон</label>
+                            <select id="rulesTemplate" onchange="applyRulesTemplate(this.value)">
+                                <option value="" data-i18n="placeholder_template">-- Выберите шаблон --</option>
+                                <option value="basic">📜 Standard Rules (RU)</option>
+                                <option value="chat">💬 Chat Rules (RU)</option>
+                                <option value="voice">🔊 Voice Rules (RU)</option>
+                                <option value="admin">⚖️ Admin Rules (RU)</option>
+                            </select>
+                        </div>
+                    </div>
+                    
+                    <div id="rulesEmbedsContainer">
+                        <!-- Embeds will be rendered here -->
+                    </div>
+                    
+                    <button class="btn btn-ghost" onclick="addRuleEmbed()" style="margin-bottom: 30px; width: 100%; justify-content: center;">
+                        ➕ Добавить блок (Embed)
+                    </button>
+
+                    <div class="card">
+                        <div class="card-header">🤖 Настройки вебхука</div>
+                        <div style="display: flex; gap: 20px;">
+                            <div class="form-group" style="flex: 1;">
+                                <label>Имя отправителя</label>
+                                <input type="text" id="rulesWebhookName" placeholder="Server Rules" oninput="updateRulesPreview()">
+                            </div>
+                            <div class="form-group" style="flex: 1;">
+                                <label>Avatar URL (Опционально)</label>
+                                <input type="text" id="rulesWebhookAvatar" placeholder="https://..." oninput="updateRulesPreview()">
+                            </div>
+                        </div>
+                        <div class="form-group">
+                            <label>Канал для отправки</label>
+                            <select id="rulesChannelId">
+                                <option value="">-- Выберите канал --</option>
+                            </select>
+                        </div>
+                        <button class="btn btn-primary" onclick="sendRules()" style="width: 100%; justify-content: center;">
+                            🚀 Опубликовать правила
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Right: Sticky Preview -->
+                <div style="width: 450px; position: sticky; top: 20px;">
+                    <div class="card" style="padding: 0; overflow: hidden; border: none;">
+                        <div class="card-header" style="padding: 20px 20px 0 20px;" data-i18n="preview">👀 Предпросмотр</div>
+                        <div style="background: #313338; padding: 20px; font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;">
+                            <div style="display: flex; gap: 12px;">
+                                <img id="prevWebhookAvatar" src="https://cdn.discordapp.com/embed/avatars/0.png" style="width: 40px; height: 40px; border-radius: 50%;" onerror="this.src='https://cdn.discordapp.com/embed/avatars/0.png'">
+                                <div style="flex: 1;">
+                                    <div style="display: flex; align-items: center; gap: 6px; margin-bottom: 4px;">
+                                        <span id="prevWebhookName" style="font-weight: 500; color: #fff; font-size: 14px;">Server Rules</span>
+                                        <span style="background: #5865f2; color: #fff; font-size: 10px; padding: 1px 4px; border-radius: 3px; font-weight: 500;">APP</span>
+                                        <span style="color: #b5bac1; font-size: 12px;" data-i18n="today_at">Сегодня, в</span>
+                                    </div>
+                                    
+                                <div id="prevEmbedsList" style="overflow-wrap: break-word; word-break: break-word;">
+                                    <!-- Preview embeds will be here -->
+                                </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div id="setup" class="content-section">
+            <h1 data-i18n="nav_structure">Структура сервера</h1>
+            
+            <div style="display: flex; gap: 30px; align-items: flex-start;">
+                <!-- Left: Editor -->
+                <div style="flex: 1;">
+                    <div class="card">
+                        <div class="card-header" data-i18n="header_struct_editor">🏗️ Конструктор шаблона</div>
+                        <p style="color: var(--text-dim); margin-bottom: 5px; font-size: 14px;" data-i18n="desc_struct_editor">Создайте структуру категорий и каналов, которую бот развернет на сервере.</p>
+                        <p style="color: #ff9f43; margin-bottom: 20px; font-size: 12px; font-weight: 500;">⚠️ Форумы и Объявления требуют включения режима "Сообщество" в Discord.</p>
+                        
+                        <div style="display: flex; gap: 8px; margin-bottom: 20px; flex-wrap: wrap;">
+                            <button class="btn btn-ghost" onclick="loadCurrentStructure()" style="font-size: 12px; padding: 8px 12px; background: rgba(88, 101, 242, 0.1);">🔄 Загрузить из Discord</button>
+                            <button class="btn btn-ghost" onclick="applyServerTemplate('gaming')" style="font-size: 12px; padding: 8px 12px;">🎮 Gaming</button>
+                            <button class="btn btn-ghost" onclick="applyServerTemplate('community')" style="font-size: 12px; padding: 8px 12px;">💬 Community</button>
+                            <button class="btn btn-ghost" onclick="applyServerTemplate('dev')" style="font-size: 12px; padding: 8px 12px;">💻 Dev</button>
+                        </div>
+
+                        <div id="templateEditor">
+                            <!-- Categories and channels will be rendered here -->
+                        </div>
+
+                        <button class="btn btn-ghost" onclick="addTemplateCategory()" style="width: 100%; justify-content: center; margin-top: 10px;" data-i18n="btn_add_category">
+                            ➕ Добавить категорию
+                        </button>
+
+                        <button class="btn btn-primary" id="applySetupBtn" onclick="applyStructureToServer()" style="width: 100%; justify-content: center; margin-top: 30px;" data-i18n="btn_apply_struct">
+                            🚀 Применить структуру на сервер
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Right: Tree Preview -->
+                <div style="width: 350px; position: sticky; top: 20px;">
+                    <div class="card" style="padding: 0; overflow: hidden; border: none; background: #2b2d31;">
+                        <div class="card-header" style="padding: 20px; border-bottom: 1px solid #1e1f22;" data-i18n="struct_preview">📂 Предпросмотр структуры</div>
+                        <div id="serverTreePreview" style="padding: 20px; font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif; color: #949ba4; font-size: 14px;">
+                            <!-- Tree will be rendered here -->
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="save-bar" id="saveBar">
+        <span style="display: flex; align-items: center; color: var(--text-dim); font-size: 14px;" data-i18n="changes_warning">Внимание: у вас есть несохраненные изменения!</span>
+        <button class="btn btn-ghost" onclick="resetForm()" data-i18n="btn_reset">Сбросить</button>
+        <button class="btn btn-primary" onclick="saveSettings()" data-i18n="btn_save">Сохранить</button>
+    </div>
+
+    <script>
+        const translations = {
+            ru: {
+                title: "Velyx | Панель управления",
+                nav_analytics: "Аналитика",
+                nav_logs: "Логи сервера",
+                nav_rules: "Правила",
+                nav_apps: "Заявки",
+                nav_automod: "Модерация",
+                nav_structure: "Структура",
+                
+                // Analytics
+                stat_total: "👥 Всего участников",
+                stat_active_today: "🔥 Активность (24ч)",
+                stat_messages: "💬 Сообщений сегодня",
+                header_activity: "📈 График активности",
+
+                // Rules Section
+                header_rules: "Управление правилами",
+                card_templates: "📋 Шаблоны правил",
+                label_template: "Выберите готовый шаблон",
+                placeholder_template: "-- Выберите шаблон --",
+                card_webhook: "🤖 Настройки вебхука",
+                label_webhook_name: "Имя отправителя",
+                label_webhook_avatar: "Avatar URL",
+                label_target_channel: "Канал для отправки",
+                btn_publish: "🚀 Опубликовать правила",
+                preview: "👀 Предпросмотр",
+                btn_add_embed: "➕ Добавить блок (Embed)",
+                label_embed_title: "Заголовок",
+                label_embed_desc: "Описание",
+                label_embed_image: "URL Картинки",
+                label_embed_color: "Цвет полоски",
+                today_at: "Сегодня, в",
+
+                // Auto-Mod Section
+                header_automod: "Автоматическая модерация",
+                card_links: "🛡️ Защита от ссылок",
+                label_invites: "Фильтр приглашений",
+                desc_invites: "Удалять приглашения на другие Discord серверы",
+                label_all_links: "Все ссылки",
+                desc_all_links: "Удалять любые ссылки (http/https)",
+                card_antispam: "⚡ Анти-спам",
+                label_antispam: "Защита от спама",
+                desc_antispam: "Наказывать за отправку слишком большого количества сообщений",
+                card_punishment: "⚖️ Наказание",
+                label_punish_type: "Тип наказания за нарушение",
+                label_mute_duration: "Длительность мута",
+                btn_save_settings: "Сохранить настройки",
+                punish_none: "Только удаление сообщения",
+                punish_timeout: "Тайм-аут (Мут)",
+                punish_ban: "Бан",
+
+                // Logs Section
+                header_logs: "Логи сервера",
+                card_log_channel: "🆔 Канал для логов",
+                select_channel: "-- Выберите канал --",
+                card_log_events: "🔄 События для логирования",
+                log_msgs: "Сообщения",
+                log_msgs_desc: "Логировать новые сообщения",
+                log_del: "Удаления",
+                log_del_desc: "Логировать удаленные сообщения",
+                log_edit: "Изменения",
+                log_edit_desc: "Логировать измененные сообщения",
+                log_joins: "Входы",
+                log_joins_desc: "Логировать новых участников",
+                log_leaves: "Выходы",
+                log_leaves_desc: "Логировать ушедших участников",
+                log_voice: "Голосовые",
+                log_voice_desc: "Логировать смену голосовых каналов",
+
+                // Applications Section
+                header_apps: "Управление заявками",
+                card_app_channel: "🆔 Канал для заявок",
+                card_actions: "📡 Действия",
+                label_panel_chan: "Канал для отправки панели",
+                btn_send_panel: "🚀 Отправить панель",
+                card_rec_status: "📡 Статус набора",
+                label_rec_open: "Прием заявок",
+                desc_rec_open: "Открыть или закрыть набор в команду",
+                card_rec_design: "🖼️ Оформление панели",
+                label_title: "Заголовок",
+                label_desc: "Описание",
+                placeholder_rec_title: "Напр. 📩 Подача заявок",
+                placeholder_rec_desc: "Введите описание...",
+                card_questions: "❓ Вопросы анкеты (макс. 5)",
+                btn_add_question: "➕ Добавить вопрос",
+                placeholder_q_name: "Название вопроса",
+                q_short: "Короткий ответ",
+                q_paragraph: "Абзац",
+                btn_apply_app: "📩 Подать заявку",
+                app_fallback_title: "📩 Подача заявок",
+                app_fallback_desc: "Нажмите на кнопку ниже, чтобы заполнить анкету...",
+
+                label_approve_msg: "Сообщение при одобрении",
+                placeholder_approve_msg: "Напр. Ссылка на чат или важная информация...",
+                label_approve_role: "Роль при одобрении",
+                placeholder_approve_role: "-- Выберите роль --",
+
+                label_dm_notify: "Уведомление в ЛС",
+                desc_dm_notify: "Отправлять пользователю сообщение о наказании",
+                placeholder_dm_msg: "Вы были наказаны на сервере {guild}. Причина: {reason}",
+                dm_vars_desc: "Доступные переменные:",
+                
+                // Save Bar
+                changes_warning: "Внимание: у вас есть несохраненные изменения!",
+                btn_reset: "Сбросить",
+                btn_save: "Сохранить",
+
+                // Structure
+                header_struct_editor: "🏗️ Конструктор шаблона",
+                desc_struct_editor: "Создайте структуру категорий и каналов, которую бот развернет на сервере.",
+                btn_add_category: "➕ Добавить категорию",
+                btn_apply_struct: "🚀 Применить структуру на сервер",
+                struct_preview: "📂 Предпросмотр структуры"
+            },
+            en: {
+                title: "Velyx | Dashboard",
+                nav_analytics: "Analytics",
+                nav_logs: "Server Logs",
+                nav_rules: "Rules",
+                nav_apps: "Applications",
+                nav_automod: "Moderation",
+                nav_structure: "Structure",
+                
+                // Analytics
+                stat_total: "👥 Total Members",
+                stat_active_today: "🔥 Active Today",
+                stat_messages: "💬 Messages Today",
+                header_activity: "📈 Activity Chart",
+
+                // Rules Section
+                header_rules: "Rules Management",
+                card_templates: "📋 Rules Templates",
+                label_template: "Select a template",
+                placeholder_template: "-- Select template --",
+                card_webhook: "🤖 Webhook Settings",
+                label_webhook_name: "Sender Name",
+                label_webhook_avatar: "Avatar URL",
+                label_target_channel: "Target Channel",
+                btn_publish: "🚀 Publish Rules",
+                preview: "👀 Preview",
+                btn_add_embed: "➕ Add block (Embed)",
+                label_embed_title: "Title",
+                label_embed_desc: "Description",
+                label_embed_image: "Image URL",
+                label_embed_color: "Sidebar Color",
+                today_at: "Today at",
+
+                // Auto-Mod Section
+                header_automod: "Auto Moderation",
+                card_links: "🛡️ Link Protection",
+                label_invites: "Invite Filter",
+                desc_invites: "Delete invites to other Discord servers",
+                label_all_links: "All Links",
+                desc_all_links: "Delete any links (http/https)",
+                card_antispam: "⚡ Anti-Spam",
+                label_antispam: "Spam Protection",
+                desc_antispam: "Punish users for sending too many messages",
+                card_punishment: "⚖️ Punishment",
+                label_punish_type: "Punishment type for violation",
+                label_mute_duration: "Mute duration",
+                btn_save_settings: "Save Settings",
+                punish_none: "Message deletion only",
+                punish_timeout: "Timeout (Mute)",
+                punish_ban: "Ban",
+
+                // Logs Section
+                header_logs: "Server Logs",
+                card_log_channel: "🆔 Log Channel",
+                select_channel: "-- Select channel --",
+                card_log_events: "🔄 Logging Events",
+                log_msgs: "Messages",
+                log_msgs_desc: "Log new messages",
+                log_del: "Deletions",
+                log_del_desc: "Log deleted messages",
+                log_edit: "Edits",
+                log_edit_desc: "Log edited messages",
+                log_joins: "Member Joins",
+                log_joins_desc: "Log new members",
+                log_leaves: "Member Leaves",
+                log_leaves_desc: "Log members leaving",
+                log_voice: "Voice Channels",
+                log_voice_desc: "Log voice state changes",
+
+                // Applications Section
+                header_apps: "Applications Management",
+                card_app_channel: "🆔 Apps Channel",
+                card_actions: "📡 Actions",
+                label_panel_chan: "Channel to send panel",
+                btn_send_panel: "🚀 Send Recruitment Panel",
+                card_rec_status: "📡 Recruitment Status",
+                label_rec_open: "Applications Open",
+                desc_rec_open: "Open or close team recruitment",
+                card_rec_design: "🖼️ Panel Design",
+                label_title: "Title",
+                label_desc: "Description",
+                placeholder_rec_title: "e.g. 📩 Applications",
+                placeholder_rec_desc: "Enter description...",
+                card_questions: "❓ Form Questions (max 5)",
+                btn_add_question: "➕ Add question",
+                placeholder_q_name: "Question title",
+                q_short: "Short",
+                q_paragraph: "Paragraph",
+                btn_apply_app: "📩 Apply Now",
+                app_fallback_title: "📩 Applications",
+                app_fallback_desc: "Click the button below to apply...",
+
+                label_approve_msg: "Approval Message",
+                placeholder_approve_msg: "e.g. Chat link or important info...",
+                label_approve_role: "Approval Role",
+                placeholder_approve_role: "-- Select Role --",
+
+                label_dm_notify: "DM Notification",
+                desc_dm_notify: "Send a punishment message to the user",
+                placeholder_dm_msg: "You were punished in {guild}. Reason: {reason}",
+                dm_vars_desc: "Available variables:",
+                
+                // Save Bar
+                changes_warning: "Warning: you have unsaved changes!",
+                btn_reset: "Reset",
+                btn_save: "Save",
+
+                // Structure
+                header_struct_editor: "🏗️ Template Designer",
+                desc_struct_editor: "Design categories and channels that the bot will create on the server.",
+                btn_add_category: "➕ Add Category",
+                btn_apply_struct: "🚀 Apply Structure to Server",
+                struct_preview: "📂 Structure Preview"
+            }
+        };
+        
+        function setLanguage(lang) {
+            localStorage.setItem('lang', lang);
+            const t = translations[lang];
+            if (!t) return;
+
+            document.querySelectorAll('[data-i18n]').forEach(el => {
+                const key = el.getAttribute('data-i18n');
+                if (!t[key]) return;
+                
+                if (el.tagName === 'INPUT' || el.tagName === 'TEXTAREA') {
+                    el.placeholder = t[key];
+                } else {
+                    el.innerText = t[key];
+                }
+            });
+
+            document.title = t.title;
+
+            const btnRu = document.getElementById('btn-ru');
+            const btnEn = document.getElementById('btn-en');
+            if (btnRu) btnRu.classList.toggle('active', lang === 'ru');
+            if (btnEn) btnEn.classList.toggle('active', lang === 'en');
+
+            // Refresh dynamic parts if they are initialized
+            if (typeof renderQuestions === 'function') renderQuestions();
+            if (typeof updateRecruitmentPreview === 'function') updateRecruitmentPreview();
+            if (typeof renderRuleEmbeds === 'function') renderRuleEmbeds();
+            if (typeof updateRulesPreview === 'function') updateRulesPreview();
+        }
+
+        let originalConfig = {};
+        let currentConfig = {
+            logging: {},
+            recruitment: { questions: [] },
+            automod: {}
+        };
+        let rulesEmbeds = [{ title: '', content: '', imageUrl: '', thumbnailUrl: '', color: '#2b2d31' }];
+
+        function toggleSidebar() {
+            document.querySelector('.sidebar').classList.toggle('open');
+            document.querySelector('.sidebar-overlay').classList.toggle('visible');
+        }
+
+        // Navigation
+        document.querySelectorAll('.nav-item').forEach(item => {
+            item.addEventListener('click', () => {
+                const target = item.getAttribute('data-target') || item.getAttribute('data-tab');
+                if (!target) return;
+
+                // Close sidebar on mobile after click
+                if (window.innerWidth <= 992) {
+                    toggleSidebar();
+                }
+
+                // Sync current UI state to config before switching
+                if (typeof updateConfigFromUI === 'function') updateConfigFromUI();
+
+                document.querySelectorAll('.nav-item').forEach(i => i.classList.remove('active'));
+                document.querySelectorAll('.content-section').forEach(s => s.classList.remove('active'));
+                
+                item.classList.add('active');
+                const targetEl = document.getElementById(target);
+                if (targetEl) targetEl.classList.add('active');
+                
+                // Refresh previews/editors
+                if (target === 'rules') updateRulesPreview();
+                if (target === 'recruitment') updateRecruitmentPreview();
+                if (target === 'setup') {
+                    renderTemplateEditor();
+                    loadCurrentStructure(); // Auto-load real channels on open
+                }
+                if (target === 'analytics') {
+                    loadAnalytics();
+                }
+
+                if (typeof checkChanges === 'function') checkChanges();
+            });
+        });
+
+        let serverId = new URLSearchParams(window.location.search).get('server');
+        if (!serverId) window.location.href = '/servers.html';
+
+        async function loadSettings() {
+            console.log('Загрузка настроек для сервера:', serverId);
+            try {
+                const res = await fetch(`/api/config/${serverId}`);
+                if (!res.ok) {
+                    console.error('Ошибка API:', res.status);
+                    if (res.status === 401) window.location.href = '/';
+                    return;
+                }
+                const data = await res.json();
+                console.log('Данные получены:', data);
+                
+                // Ensure properties exist to prevent crashes
+                if (!data.logging) data.logging = {};
+                if (!data.recruitment) data.recruitment = { questions: [] };
+                if (!data.automod) {
+                    data.automod = { antiInvite: false, antiLink: false, antiSpam: false, punishment: 'none', muteDuration: 3600, sendDm: false, dmMessage: '' };
+                }
+
+                originalConfig = JSON.parse(JSON.stringify(data));
+                currentConfig = data;
+                
+                // Populate Server Profile
+                const nameEl = document.getElementById('serverName');
+                const iconEl = document.getElementById('serverIcon');
+                
+                if (data.guild) {
+                    if (nameEl) nameEl.innerText = data.guild.name;
+                    if (iconEl) iconEl.src = data.guild.icon || 'https://cdn.discordapp.com/embed/avatars/0.png';
+                } else {
+                    console.warn('Данные сервера (guild) не пришли от API');
+                    if (nameEl) nameEl.innerText = 'Server #' + serverId;
+                }
+
+                await loadChannels();
+                await updateForm();
+                
+            } catch (err) {
+                console.error('Критическая ошибка загрузки:', err);
+                showToast('Ошибка загрузки данных');
+            }
+        }
+        
+
+
+        async function loadChannels() {
+            try {
+                const res = await fetch(`/api/channels/${serverId}`);
+                if (!res.ok) return;
+                const channels = await res.json();
+                
+                const selects = ['logChannelId', 'adminChannelId', 'panelChannelId', 'rulesChannelId', 'liveStatsChannelId'];
+                selects.forEach(selId => {
+                    const select = document.getElementById(selId);
+                    if (!select) return;
+                    const defaultOpt = select.querySelector('option');
+                    select.innerHTML = '';
+                    if (defaultOpt) select.appendChild(defaultOpt);
+                    
+                    channels.forEach(ch => {
+                        const opt = document.createElement('option');
+                        opt.value = ch.id;
+                        // Если в имени уже есть значок правил, не добавляем ничего лишнего
+                        opt.textContent = ch.name.includes('📜') ? ch.name : `# ${ch.name}`;
+                        select.appendChild(opt);
+                    });
+                });
+                
+                // Attach event listeners to new selects
+                document.querySelectorAll('select').forEach(el => {
+                    el.removeEventListener('change', checkChanges);
+                    el.addEventListener('change', checkChanges);
+                });
+            } catch(e) {}
+        }
+
+        async function updateForm() {
+            if (!currentConfig || !currentConfig.logging) return;
+            
+            document.getElementById('logChannelId').value = currentConfig.logChannelId || '';
+            document.getElementById('adminChannelId').value = currentConfig.adminChannelId || '';
+            
+            document.getElementById('logMessages').checked = !!currentConfig.logging.messages;
+            document.getElementById('logDeletions').checked = !!currentConfig.logging.deletions;
+            document.getElementById('logEdits').checked = !!currentConfig.logging.edits;
+            document.getElementById('logJoins').checked = !!currentConfig.logging.joins;
+            document.getElementById('logLeaves').checked = !!currentConfig.logging.leaves;
+            document.getElementById('logVoice').checked = !!currentConfig.logging.voice;
+            
+            document.getElementById('recOpen').checked = !!currentConfig.recruitment.open;
+            document.getElementById('recTitle').value = currentConfig.recruitment.title || '';
+            document.getElementById('recDesc').value = currentConfig.recruitment.description || '';
+            document.getElementById('recImageUrl').value = currentConfig.recruitment.imageUrl || '';
+            document.getElementById('recColor').value = currentConfig.recruitment.color || '#2b2d31';
+            document.getElementById('recApproveMsg').value = currentConfig.recruitment.approvalMessage || '';
+            document.getElementById('recApproveRole').value = currentConfig.recruitment.approvalRole || '';
+            
+            // Trigger role loading
+            await loadRoles();
+
+            if (currentConfig.automod) {
+                document.getElementById('modAntiInvite').checked = !!currentConfig.automod.antiInvite;
+                document.getElementById('modAntiLink').checked = !!currentConfig.automod.antiLink;
+                document.getElementById('modAntiSpam').checked = !!currentConfig.automod.antiSpam;
+                document.getElementById('modPunishment').value = currentConfig.automod.punishment || 'none';
+                document.getElementById('modMuteDuration').value = currentConfig.automod.muteDuration || 3600;
+                document.getElementById('modSendDm').checked = !!currentConfig.automod.sendDm;
+                document.getElementById('modDmMessage').value = currentConfig.automod.dmMessage || '';
+            }
+            
+            toggleMuteDuration();
+            toggleDmText();
+
+            renderQuestions();
+            updateRecruitmentPreview();
+            
+            // Run checkChanges once to let it pull any DOM-specific default values (like missing select options turning into "") into currentConfig
+            checkChanges();
+            // Reset originalConfig baseline AFTER form is completely processed
+            originalConfig = JSON.parse(JSON.stringify(currentConfig));
+            // Run checkChanges again to hide the banner
+            checkChanges();
+        }
+
+        function renderQuestions() {
+            const container = document.getElementById('questionsContainer');
+            if (!container || !currentConfig.recruitment || !translations) return;
+            container.innerHTML = '';
+            
+            const lang = localStorage.getItem('lang') || 'ru';
+            const t = translations[lang];
+            if (!t) return;
+
+            currentConfig.recruitment.questions.forEach((q, index) => {
+                const row = document.createElement('div');
+                row.className = 'question-row';
+                row.innerHTML = `
+                    <input type="text" value="${q.label}" oninput="updateQuestion(${index}, 'label', this.value)" placeholder="${t.placeholder_q_name}">
+                    <select onchange="updateQuestion(${index}, 'style', this.value)">
+                        <option value="short" ${q.style === 'short' ? 'selected' : ''}>${t.q_short}</option>
+                        <option value="paragraph" ${q.style === 'paragraph' ? 'selected' : ''}>${t.q_paragraph}</option>
+                    </select>
+                    <button class="btn btn-danger" onclick="removeQuestion(${index})" style="padding: 10px;">🗑️</button>
+                `;
+                container.appendChild(row);
+            });
+        }
+
+        function addQuestion() {
+            if (currentConfig.recruitment.questions.length >= 5) return alert('Максимум 5 вопросов!');
+            currentConfig.recruitment.questions.push({
+                id: `q_${Date.now()}`,
+                label: 'Новый вопрос',
+                style: 'short'
+            });
+            renderQuestions();
+            checkChanges();
+        }
+
+        function updateQuestion(index, key, value) {
+            currentConfig.recruitment.questions[index][key] = value;
+            checkChanges();
+        }
+
+        function removeQuestion(index) {
+            currentConfig.recruitment.questions.splice(index, 1);
+            renderQuestions();
+            checkChanges();
+        }
+
+        function updateRecruitmentPreview() {
+            const title = document.getElementById('recTitle').value;
+            const desc = document.getElementById('recDesc').value;
+            const imageUrl = document.getElementById('recImageUrl').value;
+            const color = document.getElementById('recColor').value;
+            const isOpen = document.getElementById('recOpen').checked;
+
+            const lang = localStorage.getItem('lang') || 'ru';
+            const t = translations[lang];
+
+            document.getElementById('prevRecTitle').innerText = title || t.app_fallback_title;
+            
+            let formattedDesc = (desc || t.app_fallback_desc)
+                .replace(/## (.*)/g, '<span style="font-size: 1.25rem; font-weight: 700; color: #fff; display: block; margin-top: 8px;">$1</span>')
+                .replace(/\*\*(.*)\*\*/g, '<strong>$1</strong>')
+                .replace(/> (.*)/g, '<div style="border-left: 4px solid #4e5058; padding-left: 8px; color: #b5bac1;">$1</div>');
+            
+            document.getElementById('prevRecDesc').innerHTML = formattedDesc;
+            document.getElementById('prevRecEmbed').style.borderLeftColor = color;
+
+            const pImg = document.getElementById('prevRecImage');
+            if (imageUrl) {
+                pImg.src = imageUrl;
+                pImg.style.display = 'block';
+            } else {
+                pImg.style.display = 'none';
+            }
+
+            const pBtn = document.getElementById('prevRecButton');
+            pBtn.innerHTML = `<span>${t.btn_apply_app}</span>`;
+            if (isOpen) {
+                pBtn.style.background = '#5865f2';
+                pBtn.style.opacity = '1';
+                pBtn.style.cursor = 'pointer';
+            } else {
+                pBtn.style.background = '#4f545c';
+                pBtn.style.opacity = '0.5';
+                pBtn.style.cursor = 'not-allowed';
+            }
+        }
+
+        // Detect Changes
+        function checkChanges() {
+            if (!originalConfig.logging) return;
+            let isChanged = false;
+
+            // Sync current UI to currentConfig object before comparing
+            currentConfig.logChannelId = document.getElementById('logChannelId').value;
+            currentConfig.adminChannelId = document.getElementById('adminChannelId').value;
+            currentConfig.logging.messages = document.getElementById('logMessages').checked;
+            currentConfig.logging.deletions = document.getElementById('logDeletions').checked;
+            currentConfig.logging.edits = document.getElementById('logEdits').checked;
+            currentConfig.logging.joins = document.getElementById('logJoins').checked;
+            currentConfig.logging.leaves = document.getElementById('logLeaves').checked;
+            currentConfig.logging.voice = document.getElementById('logVoice').checked;
+            
+            currentConfig.recruitment.open = document.getElementById('recOpen').checked;
+            currentConfig.recruitment.title = document.getElementById('recTitle').value;
+            currentConfig.recruitment.description = document.getElementById('recDesc').value;
+            currentConfig.recruitment.imageUrl = document.getElementById('recImageUrl').value;
+            currentConfig.recruitment.color = document.getElementById('recColor').value;
+            currentConfig.recruitment.approvalMessage = document.getElementById('recApproveMsg').value;
+            currentConfig.recruitment.approvalRole = document.getElementById('recApproveRole').value;
+
+            if (currentConfig.automod) {
+                currentConfig.automod.antiInvite = document.getElementById('modAntiInvite').checked;
+                currentConfig.automod.antiLink = document.getElementById('modAntiLink').checked;
+                currentConfig.automod.antiSpam = document.getElementById('modAntiSpam').checked;
+                currentConfig.automod.punishment = document.getElementById('modPunishment').value;
+                currentConfig.automod.muteDuration = parseInt(document.getElementById('modMuteDuration').value);
+                currentConfig.automod.sendDm = document.getElementById('modSendDm').checked;
+                currentConfig.automod.dmMessage = document.getElementById('modDmMessage').value;
+            }
+
+            // Comparison
+            let diffs = [];
+            if (currentConfig.logChannelId !== originalConfig.logChannelId) diffs.push('logChannel');
+            if (currentConfig.adminChannelId !== originalConfig.adminChannelId) diffs.push('adminChannel');
+            if (JSON.stringify(currentConfig.logging) !== JSON.stringify(originalConfig.logging)) diffs.push('logging');
+            if (JSON.stringify(currentConfig.recruitment) !== JSON.stringify(originalConfig.recruitment)) diffs.push('recruitment');
+            if (JSON.stringify(currentConfig.automod) !== JSON.stringify(originalConfig.automod)) diffs.push('automod');
+
+            isChanged = diffs.length > 0;
+            
+            const warnSpan = document.querySelector('#saveBar span');
+            if (isChanged && warnSpan) {
+                const lang = localStorage.getItem('lang') || 'ru';
+                const baseText = lang === 'en' ? 'Attention: you have unsaved changes!' : 'Внимание: у вас есть несохраненные изменения!';
+                warnSpan.innerText = `${baseText} [Debug: ${diffs.join(', ')}]`;
+            }
+
+            document.getElementById('saveBar').classList.toggle('visible', isChanged);
+        }
+
+        document.querySelectorAll('input, textarea, select').forEach(el => {
+            el.addEventListener('input', checkChanges);
+            el.addEventListener('change', checkChanges);
+        });
+
+        function resetForm() {
+            window.location.reload(true);
+        }
+
+        async function saveSettings() {
+            const btn = document.querySelector('.save-bar .btn-primary');
+            const originalText = btn.innerHTML;
+            btn.disabled = true;
+            btn.innerHTML = '⌛ Сохранение...';
+
+            try {
+                // Update currentConfig with simple values from inputs
+                currentConfig.logChannelId = document.getElementById('logChannelId').value;
+                currentConfig.adminChannelId = document.getElementById('adminChannelId').value;
+                currentConfig.logging.messages = document.getElementById('logMessages').checked;
+                currentConfig.logging.deletions = document.getElementById('logDeletions').checked;
+                currentConfig.logging.edits = document.getElementById('logEdits').checked;
+                currentConfig.logging.joins = document.getElementById('logJoins').checked;
+                currentConfig.logging.leaves = document.getElementById('logLeaves').checked;
+                currentConfig.logging.voice = document.getElementById('logVoice').checked;
+                currentConfig.recruitment.open = document.getElementById('recOpen').checked;
+                currentConfig.recruitment.title = document.getElementById('recTitle').value;
+                currentConfig.recruitment.description = document.getElementById('recDesc').value;
+                currentConfig.recruitment.imageUrl = document.getElementById('recImageUrl').value;
+                currentConfig.recruitment.color = document.getElementById('recColor').value;
+                currentConfig.recruitment.approvalMessage = document.getElementById('recApproveMsg').value;
+                currentConfig.recruitment.approvalRole = document.getElementById('recApproveRole').value;
+
+                currentConfig.automod.antiInvite = document.getElementById('modAntiInvite').checked;
+                currentConfig.automod.antiLink = document.getElementById('modAntiLink').checked;
+                currentConfig.automod.antiSpam = document.getElementById('modAntiSpam').checked;
+                currentConfig.automod.punishment = document.getElementById('modPunishment').value;
+                currentConfig.automod.muteDuration = parseInt(document.getElementById('modMuteDuration').value);
+                currentConfig.automod.sendDm = document.getElementById('modSendDm').checked;
+                currentConfig.automod.dmMessage = document.getElementById('modDmMessage').value;
+
+                const res = await fetch(`/api/config/${serverId}`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(currentConfig)
+                });
+
+                if (res.ok) {
+                    originalConfig = JSON.parse(JSON.stringify(currentConfig));
+                    checkChanges();
+                    showToast('Настройки сохранены!');
+                } else {
+                    alert('Ошибка при сохранении');
+                }
+            } catch(e) {
+                alert('Ошибка сети');
+            } finally {
+                btn.disabled = false;
+                btn.innerHTML = originalText;
+            }
+        }
+
+        async function sendPanel() {
+            const channelId = document.getElementById('panelChannelId').value;
+            if (!channelId) return alert('Введите ID канала!');
+
+            const btn = document.querySelector('button[onclick="sendPanel()"]');
+            const originalText = btn.innerHTML;
+            btn.disabled = true;
+            btn.innerHTML = '⌛ Отправка...';
+
+            try {
+                const res = await fetch(`/api/send-panel/${serverId}`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ channelId })
+                });
+
+                if (res.ok) {
+                    showToast('Панель отправлена!');
+                } else {
+                    alert('Ошибка при отправке панели');
+                }
+            } catch(e) {
+                alert('Ошибка сети');
+            } finally {
+                btn.disabled = false;
+                btn.innerHTML = originalText;
+            }
+        }
+
+        function showToast(text) {
+            const toast = document.getElementById('toast');
+            toast.innerText = text;
+            toast.classList.add('show');
+            setTimeout(() => toast.classList.remove('show'), 3000);
+        }
+
+        rulesTemplates = {
+            basic: {
+                title: "📜 Основные правила сервера",
+                content: "1. **Уважение:** Относитесь к другим участникам с уважением. Оскорбления и травля запрещены.\n2. **Никнеймы:** Никнеймы не должны содержать мата и оскорблений.\n3. **Реклама:** Реклама сторонних ресурсов без разрешения администрации запрещена.\n4. **Контент:** Запрещена публикация шок-контента, порнографии и вредоносных ссылок."
+            },
+            chat: {
+                title: "💬 Правила текстовых каналов",
+                content: "1. **Спам:** Запрещен спам, флуд и злоупотребление капсом.\n2. **Темы:** Старайтесь общаться в каналах, соответствующих их тематике.\n3. **Язык:** Основной язык общения — русский.\n4. **Спойлеры:** Используйте теги спойлеров для обсуждения сюжетов фильмов и игр."
+            },
+            voice: {
+                title: "🔊 Правила голосовых каналов",
+                content: "1. **Звук:** Запрещено использование программ для изменения голоса и проигрывание громких звуков.\n2. **Запись:** Запрещена запись разговора без согласия всех участников.\n3. **Помехи:** Старайтесь минимизировать фоновые шумы."
+            },
+            admin: {
+                title: "⚖️ Правила администрации",
+                content: "1. **Беспристрастность:** Администратор должен быть нейтрален в конфликтах.\n2. **Злоупотребление:** Использование прав в личных целях запрещено.\n3. **Ответственность:** Каждый бан или мут должен иметь четкую причину и доказательства."
+            }
+        };
+
+        rulesEmbeds = [{ title: '', content: '', imageUrl: '', thumbnailUrl: '', color: '#2b2d31' }];
+
+        function addRuleEmbed() {
+            if (rulesEmbeds.length >= 10) return alert('Максимум 10 блоков!');
+            rulesEmbeds.push({ title: '', content: '', imageUrl: '', thumbnailUrl: '', color: '#2b2d31' });
+            renderRuleEmbeds();
+            updateRulesPreview();
+        }
+
+        function removeRuleEmbed(index) {
+            if (rulesEmbeds.length <= 1) return alert('Должен быть хотя бы один блок!');
+            rulesEmbeds.splice(index, 1);
+            renderRuleEmbeds();
+            updateRulesPreview();
+        }
+
+        function updateRuleEmbed(index, key, val) {
+            rulesEmbeds[index][key] = val;
+            updateRulesPreview();
+        }
+
+        function renderRuleEmbeds() {
+            const container = document.getElementById('rulesEmbedsContainer');
+            if (!container || !translations) return;
+            container.innerHTML = '';
+            
+            const lang = localStorage.getItem('lang') || 'ru';
+            const t = translations[lang];
+            if (!t) return;
+
+            rulesEmbeds.forEach((emb, index) => {
+                const card = document.createElement('div');
+                card.className = 'card';
+                card.innerHTML = `
+                    <div class="card-header" style="justify-content: space-between;">
+                        <span>✏️ ${t.block} #${index + 1}</span>
+                        ${rulesEmbeds.length > 1 ? `<button class="btn btn-danger" onclick="removeRuleEmbed(${index})" style="padding: 5px 10px; font-size: 12px;">${t.btn_remove_block}</button>` : ''}
+                    </div>
+                    <div class="form-group">
+                        <label>${t.label_title}</label>
+                        <input type="text" value="${emb.title}" oninput="updateRuleEmbed(${index}, 'title', this.value)" placeholder="${t.placeholder_title}">
+                    </div>
+                    <div class="form-group">
+                        <label>${t.label_text}</label>
+                        <textarea rows="4" oninput="updateRuleEmbed(${index}, 'content', this.value)" placeholder="${t.placeholder_text}">${emb.content}</textarea>
+                    </div>
+                    <div style="display: flex; gap: 15px;">
+                        <div class="form-group" style="flex: 1;">
+                            <label>${t.label_image}</label>
+                            <input type="text" value="${emb.imageUrl}" oninput="updateRuleEmbed(${index}, 'imageUrl', this.value)" placeholder="https://...">
+                        </div>
+                        <div class="form-group" style="flex: 1;">
+                            <label>Thumbnail URL</label>
+                            <input type="text" value="${emb.thumbnailUrl}" oninput="updateRuleEmbed(${index}, 'thumbnailUrl', this.value)" placeholder="https://...">
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label>${t.label_sidebar}</label>
+                        <div style="display: flex; gap: 10px; align-items: center;">
+                            <input type="color" value="${emb.color}" oninput="updateRuleEmbed(${index}, 'color', this.value)" style="width: 45px; height: 45px; padding: 0; border: none; border-radius: 8px; cursor: pointer; background: transparent;">
+                            <button type="button" class="btn" style="padding: 10px; font-size: 14px; background: #2f3136; flex: 1;" onclick="updateRuleEmbed(${index}, 'color', '#2b2d31'); renderRuleEmbeds();">${t.btn_no_sidebar}</button>
+                        </div>
+                    </div>
+                `;
+                container.appendChild(card);
+            });
+        }
+
+        function applyRulesTemplate(val) {
+            if (!val || !rulesTemplates[val]) return;
+            rulesEmbeds = [{
+                title: rulesTemplates[val].title,
+                content: rulesTemplates[val].content,
+                imageUrl: '',
+                thumbnailUrl: '',
+                color: '#2b2d31'
+            }];
+            renderRuleEmbeds();
+            updateRulesPreview();
+            showToast('Шаблон применен!');
+        }
+
+        function updateRulesPreview() {
+            const webhookName = document.getElementById('rulesWebhookName').value;
+            const webhookAvatar = document.getElementById('rulesWebhookAvatar').value;
+
+            document.getElementById('prevWebhookName').innerText = webhookName || 'Server Rules';
+            document.getElementById('prevWebhookAvatar').src = webhookAvatar || 'https://cdn.discordapp.com/embed/avatars/0.png';
+            
+            const prevContainer = document.getElementById('prevEmbedsList');
+            prevContainer.innerHTML = '';
+
+            rulesEmbeds.forEach(emb => {
+                const embedDiv = document.createElement('div');
+                embedDiv.style = `background: #2b2d31; border: 1px solid #1e1f22; border-left: 4px solid ${emb.color}; border-radius: 4px; padding: 12px 16px; max-width: 520px; position: relative; margin-bottom: 8px;`;
+                
+                let formattedContent = emb.content
+                    .replace(/## (.*)/g, '<span style="font-size: 1.25rem; font-weight: 700; color: #fff; display: block; margin-top: 8px;">$1</span>')
+                    .replace(/\*\*(.*)\*\*/g, '<strong>$1</strong>')
+                    .replace(/> (.*)/g, '<div style="border-left: 4px solid #4e5058; padding-left: 8px; color: #b5bac1;">$1</div>');
+
+                embedDiv.innerHTML = `
+                    ${emb.thumbnailUrl ? `<img src="${emb.thumbnailUrl}" style="position: absolute; top: 12px; right: 16px; width: 80px; height: 80px; border-radius: 4px; object-fit: contain;" onerror="this.style.display='none'">` : ''}
+                    ${emb.title ? `<div style="color: #fff; font-weight: 600; font-size: 16px; margin-bottom: 8px;">${emb.title}</div>` : ''}
+                    <div style="color: #dbdee1; font-size: 14px; white-space: pre-wrap; line-height: 1.375; ${emb.thumbnailUrl ? 'padding-right: 100px;' : ''}">${formattedContent || '...'}</div>
+                    ${emb.imageUrl ? `<img src="${emb.imageUrl}" style="margin-top: 16px; border-radius: 4px; max-width: 100%; max-height: 300px; object-fit: contain;" onerror="this.style.display='none'">` : ''}
+                `;
+                prevContainer.appendChild(embedDiv);
+            });
+        }
+
+        async function loadRoles() {
+            const guildId = new URLSearchParams(window.location.search).get('server');
+            if (!guildId) return;
+
+            try {
+                const res = await fetch(`/api/roles/${guildId}`);
+                const roles = await res.json();
+                
+                const select = document.getElementById('recApproveRole');
+                if (!select) return;
+
+                const currentVal = currentConfig.recruitment.approvalRole;
+                
+                select.innerHTML = `<option value="" data-i18n="placeholder_approve_role">-- Выберите роль --</option>`;
+                
+                roles.forEach(role => {
+                    const opt = document.createElement('option');
+                    opt.value = role.id;
+                    opt.innerText = role.name;
+                    if (role.id === currentVal) opt.selected = true;
+                    select.appendChild(opt);
+                });
+                
+                // Re-apply translations for the new options
+                const lang = localStorage.getItem('lang') || 'ru';
+                if (translations && translations[lang]) {
+                    const t = translations[lang];
+                    const defaultOpt = select.querySelector('option[value=""]');
+                    if (defaultOpt) defaultOpt.innerText = t.placeholder_approve_role;
+                }
+            } catch (err) {
+                console.error('Failed to load roles:', err);
+            }
+        }
+
+        async function sendRules() {
+            const channelId = document.getElementById('rulesChannelId').value;
+            const webhookName = document.getElementById('rulesWebhookName').value;
+            const webhookAvatar = document.getElementById('rulesWebhookAvatar').value;
+
+            if (!channelId) return alert('Выберите канал!');
+            if (rulesEmbeds.length === 0) return alert('Добавьте хотя бы один блок!');
+
+            const btn = document.querySelector('button[onclick="sendRules()"]');
+            const originalText = btn.innerHTML;
+            btn.disabled = true;
+            btn.innerHTML = '⌛ Публикация...';
+
+            try {
+                const res = await fetch(`/api/rules/send/${serverId}`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ channelId, embeds: rulesEmbeds, webhookName, webhookAvatar })
+                });
+
+                if (res.ok) {
+                    showToast('Правила опубликованы!');
+                } else {
+                    const data = await res.json();
+                    alert('Ошибка: ' + (data.error || 'Неизвестная ошибка'));
+                }
+            } catch(e) {
+                alert('Ошибка сети');
+            } finally {
+                btn.disabled = false;
+                btn.innerHTML = originalText;
+            }
+        }
+
+        // Server Setup Logic
+        customTemplate = [
+            {
+                name: 'ИНФОРМАЦИЯ',
+                channels: [
+                    { name: 'правила', type: 0 },
+                    { name: 'новости', type: 0 }
+                ]
+            },
+            {
+                name: 'ОБЩЕНИЕ',
+                channels: [
+                    { name: 'общий-чат', type: 0 },
+                    { name: 'поиск-игроков', type: 0 },
+                    { name: 'гайды', type: 0 },
+                    { name: 'медиа', type: 0 }
+                ]
+            },
+            {
+                name: 'ГОЛОСОВЫЕ КАНАЛЫ',
+                channels: [
+                    { name: 'Комната #1', type: 2, limit: 0 },
+                    { name: 'Комната #2', type: 2, limit: 5 },
+                    { name: 'Комната #3', type: 2, limit: 5 },
+                    { name: 'Комната #4', type: 2, limit: 5 },
+                    { name: 'Комната #5', type: 2, limit: 5 }
+                ]
+            }
+        ];
+
+        function renderTemplateEditor() {
+            const container = document.getElementById('templateEditor');
+            container.innerHTML = '';
+
+            customTemplate.forEach((cat, catIndex) => {
+                const catDiv = document.createElement('div');
+                catDiv.style.cssText = 'background: #232428; border-radius: 8px; padding: 15px; margin-bottom: 15px; border: 1px solid #1e1f22;';
+                catDiv.innerHTML = `
+                    <div style="display: flex; gap: 10px; margin-bottom: 10px; align-items: center;">
+                        <input type="text" value="${cat.name}" style="flex: 1; font-weight: 600;" oninput="updateTemplateCat(${catIndex}, this.value)" placeholder="Название категории">
+                        <button class="btn btn-danger" onclick="removeTemplateCat(${catIndex})" style="padding: 10px;">🗑️</button>
+                    </div>
+                    <div id="catChannels_${catIndex}" style="margin-left: 20px; border-left: 2px solid #1e1f22; padding-left: 15px;"></div>
+                    <button class="btn btn-ghost" onclick="addTemplateChannel(${catIndex})" style="font-size: 12px; padding: 5px 10px; margin-top: 10px; margin-left: 20px;">
+                        ➕ Канал
+                    </button>
+                `;
+                container.appendChild(catDiv);
+
+                const chanContainer = document.getElementById(`catChannels_${catIndex}`);
+                cat.channels.forEach((chan, chanIndex) => {
+                    const chanDiv = document.createElement('div');
+                    chanDiv.style.cssText = 'display: flex; gap: 10px; margin-bottom: 8px; align-items: center;';
+                    
+                    // Disable type selection for existing channels
+                    const isExisting = chan.id && !chan.id.toString().startsWith('temp-');
+                    const cType = parseInt(chan.type);
+                    
+                    chanDiv.innerHTML = `
+                        <select onchange="updateTemplateChan(${catIndex}, ${chanIndex}, 'type', this.value)" 
+                                style="width: auto; padding: 5px; font-size: 12px;" 
+                                ${isExisting ? 'disabled' : ''}>
+                            <option value="0" ${cType === 0 ? 'selected' : ''}>#️⃣ Текст</option>
+                            <option value="2" ${cType === 2 ? 'selected' : ''}>🔊 Голос</option>
+                            <option value="4" ${cType === 4 ? 'selected' : ''}>📁 Категория</option>
+                            <option value="5" ${cType === 5 ? 'selected' : ''}>📢 Объявление</option>
+                            <option value="15" ${cType === 15 ? 'selected' : ''}>🗨️ Форум</option>
+                            <option value="13" ${cType === 13 ? 'selected' : ''}>🎙️ Сцена (Stage)</option>
+                        </select>
+                        <input type="text" value="${chan.name}" style="flex: 1; padding: 5px; font-size: 12px;" oninput="updateTemplateChan(${catIndex}, ${chanIndex}, 'name', this.value)" placeholder="Название канала">
+                        ${cType === 2 ? `
+                            <input type="number" value="${chan.limit || 0}" style="width: 50px; padding: 5px; font-size: 12px;" oninput="updateTemplateChan(${catIndex}, ${chanIndex}, 'limit', this.value)" placeholder="Лимит">
+                        ` : ''}
+                        <button class="btn btn-danger" onclick="removeTemplateChan(${catIndex}, ${chanIndex})" style="padding: 5px 8px; font-size: 12px;">✕</button>
+                    `;
+                    chanContainer.appendChild(chanDiv);
+                });
+            });
+
+            updateServerTreePreview();
+        }
+
+        function updateTemplateCat(i, val) { customTemplate[i].name = val; updateServerTreePreview(); }
+        function removeTemplateCat(i) { customTemplate.splice(i, 1); renderTemplateEditor(); }
+        function addTemplateCategory() { customTemplate.push({ name: 'НОВАЯ КАТЕГОРИЯ', channels: [] }); renderTemplateEditor(); }
+        
+        function updateTemplateChan(ci, chi, key, val) { 
+            customTemplate[ci].channels[chi][key] = val; 
+            if (key === 'type') renderTemplateEditor(); // Re-render for limit input
+            else updateServerTreePreview(); 
+        }
+        function removeTemplateChan(ci, chi) { customTemplate[ci].channels.splice(chi, 1); renderTemplateEditor(); }
+        function addTemplateChannel(ci) { customTemplate[ci].channels.push({ name: 'новый-канал', type: 0 }); renderTemplateEditor(); }
+
+        const serverTemplates = {
+            gaming: [
+                { name: '📢 ИНФО', channels: [{ name: 'правила', type: 0 }, { name: 'новости', type: 5 }, { name: 'роли', type: 0 }] },
+                { name: '🎮 ИГРЫ', channels: [{ name: 'поиск-игроков', type: 0 }, { name: 'общий-чат', type: 0 }, { name: 'медиа', type: 0 }] },
+                { name: '🔊 ГОЛОС', channels: [{ name: 'Общая', type: 2 }, { name: 'Дуэты', type: 2, limit: 2 }, { name: 'Группы', type: 2, limit: 5 }] }
+            ],
+            community: [
+                { name: '🏠 ГЛАВНАЯ', channels: [{ name: 'добро-пожаловать', type: 0 }, { name: 'инфо', type: 0 }, { name: 'новости', type: 5 }] },
+                { name: '💬 ОБЩЕНИЕ', channels: [{ name: 'общий', type: 0 }, { name: 'флуд', type: 0 }, { name: 'мемы', type: 0 }, { name: 'творчество', type: 0 }] },
+                { name: '🎤 ГОЛОС', channels: [{ name: 'Лаунж', type: 2 }, { name: 'Музыка', type: 2 }, { name: 'АФК', type: 2 }] }
+            ],
+            dev: [
+                { name: '📂 ПРОЕКТ', channels: [{ name: 'roadmap', type: 0 }, { name: 'updates', type: 5 }, { name: 'issues', type: 0 }] },
+                { name: '💻 РАЗРАБОТКА', channels: [{ name: 'frontend', type: 0 }, { name: 'backend', type: 0 }, { name: 'database', type: 0 }, { name: 'logs', type: 0 }] },
+                { name: '📞 СОЗВОНЫ', channels: [{ name: 'Daily Standup', type: 2 }, { name: 'Emergency', type: 2 }] }
+            ]
+        };
+
+        function applyServerTemplate(key) {
+            if (!confirm('Это заменит ваш текущий черновик выбранным шаблоном. Продолжить?')) return;
+            customTemplate = JSON.parse(JSON.stringify(serverTemplates[key]));
+            renderTemplateEditor();
+            showToast('Шаблон применен к черновику!');
+        }
+
+        async function loadCurrentStructure() {
+            const btn = document.querySelector('button[onclick="loadCurrentStructure()"]');
+            const originalText = btn.innerHTML;
+            btn.disabled = true;
+            btn.innerHTML = '⌛ Загрузка...';
+
+            try {
+                const res = await fetch(`/api/guild-structure/${serverId}`);
+                const data = await res.json();
+                if (data.structure) {
+                    customTemplate = data.structure.map(cat => ({
+                        id: cat.id,
+                        name: cat.name,
+                        channels: cat.channels.map(ch => ({
+                            id: ch.id,
+                            name: ch.name,
+                            type: ch.type // Directly use integer type
+                        }))
+                    }));
+                    renderTemplateEditor();
+                    showToast('Текущая структура загружена!');
+                }
+            } catch(e) {
+                alert('Ошибка при загрузке структуры');
+            } finally {
+                btn.disabled = false;
+                btn.innerHTML = originalText;
+            }
+        }
+
+        function updateServerTreePreview() {
+            const preview = document.getElementById('serverTreePreview');
+            preview.innerHTML = '';
+            
+            customTemplate.forEach(cat => {
+                const catEl = document.createElement('div');
+                catEl.style.cssText = 'text-transform: uppercase; font-weight: 700; font-size: 11px; margin-top: 15px; display: flex; align-items: center; gap: 4px;';
+                catEl.innerHTML = `<span>⌄</span> ${cat.name || 'БЕЗ НАЗВАНИЯ'}`;
+                preview.appendChild(catEl);
+
+                cat.channels.forEach(chan => {
+                    const chanEl = document.createElement('div');
+                    chanEl.style.cssText = 'display: flex; align-items: center; gap: 6px; padding: 4px 0 4px 15px; color: #8e9297;';
+                    let icon = '#️⃣';
+                    const cType = parseInt(chan.type);
+                    if (cType === 2) icon = '🔊';
+                    else if (cType === 5) icon = '📢';
+                    else if (cType === 15) icon = '🗨️';
+                    else if (cType === 13) icon = '🎙️';
+                    chanEl.innerHTML = `<span>${icon}</span> ${chan.name || 'канал'}`;
+                    preview.appendChild(chanEl);
+                });
+            });
+        }
+
+        async function applyStructureToServer() {
+            if (!confirm('Бот начнет создавать и изменять каналы на сервере. Это может занять время. Продолжить?')) return;
+            
+            const btn = document.getElementById('applySetupBtn');
+            const originalText = btn.innerHTML;
+            btn.disabled = true;
+            btn.innerHTML = '⌛ Применение...';
+
+            try {
+                const res = await fetch(`/api/apply-structure/${serverId}`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ structure: customTemplate })
+                });
+                if (res.ok) {
+                    showToast('Структура успешно применена!');
+                    setTimeout(() => loadCurrentStructure(), 2000);
+                } else {
+                    alert('Ошибка при применении структуры. Убедитесь, что у бота есть права на управление каналами (Administrator).');
+                }
+            } catch(e) {
+                alert('Ошибка сети');
+            } finally {
+                btn.disabled = false;
+                btn.innerHTML = originalText;
+            }
+        }
+
+        function toggleMuteDuration() {
+            const punishment = document.getElementById('modPunishment').value;
+            document.getElementById('muteDurationContainer').style.display = punishment === 'mute' ? 'block' : 'none';
+        }
+
+        function toggleDmText() {
+            const sendDm = document.getElementById('modSendDm').checked;
+            document.getElementById('dmTextContainer').style.display = sendDm ? 'block' : 'none';
+        }
+
+        async function loadAnalytics() {
+            const statusEl = document.getElementById('statTotalMembers');
+            if (statusEl) statusEl.innerText = 'Загрузка...';
+            
+            const urlParams = new URLSearchParams(window.location.search);
+            const currentGuildId = urlParams.get('server');
+            
+            console.log('[Analytics] Loading data for server:', currentGuildId);
+            try {
+                const res = await fetch(`/api/analytics?guildId=${currentGuildId}`);
+                if (!res.ok) throw new Error('Ошибка API: ' + res.status);
+                const data = await res.json();
+                
+                console.log('[Analytics] Data received:', data);
+                
+                if (document.getElementById('statTotalMembers')) document.getElementById('statTotalMembers').innerText = data.totalMembers || '0';
+                if (document.getElementById('statActiveUsers')) document.getElementById('statActiveUsers').innerText = data.activeUsers || '0';
+                if (document.getElementById('statMessagesToday')) document.getElementById('statMessagesToday').innerText = data.messagesToday || '0';
+                
+                renderChart(data.chartData);
+            } catch (e) {
+                console.error('Analytics load error:', e);
+                if (statusEl) statusEl.innerText = 'Ошибка!';
+                setTimeout(loadAnalytics, 5000);
+            }
+        }
+
+        let activityChart = null;
+        function renderChart(chartData) {
+            if (typeof Chart === 'undefined') {
+                console.warn('[Analytics] Chart.js not loaded yet, retrying...');
+                setTimeout(() => renderChart(chartData), 1000);
+                return;
+            }
+            const canvas = document.getElementById('activityChart');
+            if (!canvas) return;
+            const ctx = canvas.getContext('2d');
+            if (activityChart) activityChart.destroy();
+            
+            const gradient = ctx.createLinearGradient(0, 0, 0, 400);
+            gradient.addColorStop(0, 'rgba(114, 137, 218, 0.4)');
+            gradient.addColorStop(1, 'rgba(114, 137, 218, 0)');
+
+            // Если данных нет, рисуем пустую линию
+            const displayData = chartData || [0, 0, 0, 0, 0, 0, 0];
+
+            activityChart = new Chart(ctx, {
+                type: 'line',
+                data: {
+                    labels: ['Пн', 'Вт', 'Ср', 'Чт', 'Пт', 'Сб', 'Вс'],
+                    datasets: [{
+                        label: 'Сообщения',
+                        data: displayData,
+                        borderColor: '#7289da',
+                        borderWidth: 4,
+                        pointBackgroundColor: '#fff',
+                        pointBorderColor: '#7289da',
+                        pointRadius: 6,
+                        pointHoverRadius: 8,
+                        backgroundColor: gradient,
+                        fill: true,
+                        tension: 0.4
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    scales: {
+                        y: { beginAtZero: true, grid: { color: 'rgba(255,255,255,0.05)' }, ticks: { color: '#b0b3b8', font: { size: 12 } } },
+                        x: { grid: { display: false }, ticks: { color: '#b0b3b8', font: { size: 12 } } }
+                    },
+                    plugins: { 
+                        legend: { display: false },
+                        tooltip: {
+                            backgroundColor: '#1a1c1e',
+                            titleColor: '#fff',
+                            bodyColor: '#b0b3b8',
+                            borderColor: 'rgba(114, 137, 218, 0.3)',
+                            borderWidth: 1,
+                            padding: 12,
+                            displayColors: false
+                        }
+                    }
+                }
+            });
+        }
+
+        async function setupLiveStats() {
+            const channelId = document.getElementById('liveStatsChannelId').value;
+            const statusEl = document.getElementById('liveStatsStatus');
+            const urlParams = new URLSearchParams(window.location.search);
+            const currentGuildId = urlParams.get('server');
+
+            if (!channelId) {
+                alert('Выберите канал!');
+                return;
+            }
+
+            statusEl.style.display = 'block';
+            statusEl.innerText = '⏳ Подготовка сообщения...';
+
+            try {
+                const res = await fetch('/api/setup-live-stats', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ guildId: currentGuildId, channelId })
+                });
+                const data = await res.json();
+                if (data.success) {
+                    statusEl.innerHTML = `✅ <b>Готово!</b> Сообщение отправлено в канал. Оно будет обновляться автоматически.`;
+                } else {
+                    statusEl.innerText = '❌ Ошибка: ' + data.error;
+                }
+            } catch (e) {
+                statusEl.innerText = '❌ Ошибка сети';
+            }
+        }
+
+        document.addEventListener('DOMContentLoaded', () => {
+            const savedLang = localStorage.getItem('lang') || 'ru';
+            setLanguage(savedLang);
+            
+            // Start loading data after language is set
+            renderRuleEmbeds();
+            loadSettings();
+        });
+    </script>
+</body>
+</html>
