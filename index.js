@@ -20,7 +20,6 @@ const mongoose = require('mongoose');
 const bodyParser = require('body-parser');
 const path = require('path');
 const cors = require('cors');
-const cors = require('cors');
 const fs = require('fs');
 
 const CLIENT_ID = process.env.CLIENT_ID;
