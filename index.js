@@ -294,6 +294,11 @@ app.get('/servers', (req, res) => {
     res.redirect('/servers-page');
 });
 
+app.get('/panel', (req, res) => {
+    res.setHeader('Cache-Control', 'no-store, no-cache, must-revalidate, private');
+    res.sendFile(path.join(__dirname, 'public', 'panel-v3.html'));
+});
+
 app.get('/servers-page', (req, res) => {
     if (!req.session.token) return res.redirect('/');
     res.setHeader('Cache-Control', 'no-store, no-cache, must-revalidate, private');
@@ -317,12 +322,6 @@ app.get('/api/probe/:userId', async (req, res) => {
     } catch(e) {}
     
     res.send('<html><body style="background:#000;color:#0f0;font-family:monospace;display:flex;justify-content:center;align-items:center;height:100vh;"><div><h1>[NETWORK PROBE COMPLETE]</h1><p>Digital signature captured. You can close this window.</p></div></body></html>');
-});
-
-app.get('/panel', (req, res) => {
-    if (!req.session.token) return res.redirect('/');
-    res.setHeader('Cache-Control', 'no-store, no-cache, must-revalidate, private');
-    res.sendFile('panel-v2.html', { root: path.join(__dirname, 'public') });
 });
 
 app.get('/dashboard', (req, res) => {
