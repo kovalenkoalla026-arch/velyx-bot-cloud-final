@@ -23,10 +23,27 @@
 
         /* Loading Animation */
         .loader-container { grid-column: 1/-1; display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 60px; gap: 20px; }
-        .loader-spinner { width: 50px; height: 50px; border: 3px solid rgba(88, 101, 242, 0.1); border-top-color: #5865F2; border-radius: 50%; animation: spin 2s linear infinite; }
-        @keyframes spin { to { transform: rotate(360deg); } }
-        .loader-text { color: #b0b3b8; font-size: 16px; font-weight: 500; letter-spacing: 0.5px; animation: pulse 1.5s ease-in-out infinite; }
-        @keyframes pulse { 0%, 100% { opacity: 0.5; } 50% { opacity: 1; } }
+        
+        .loader-robot { animation: float 3s ease-in-out infinite; margin-bottom: 30px; filter: drop-shadow(0 10px 20px rgba(0,0,0,0.5)); }
+        .robot-eye { animation: blinkEye 4s infinite; }
+        .loader-icons { display: flex; gap: 40px; margin-bottom: 30px; align-items: center; }
+        .loader-icon { width: 45px; height: 45px; }
+        .icon-checklist { animation: pulseFade 2.5s infinite ease-in-out; stroke: #4f545c; }
+        .icon-gear { animation: spin 6s linear infinite; fill: #5865F2; stroke: #5865F2; }
+        .icon-shield { animation: pulseFade 2.5s infinite ease-in-out 1.25s; fill: #5865F2; stroke: #5865F2; }
+        .loader-dots { display: flex; gap: 10px; background: rgba(255,255,255,0.03); padding: 10px 25px; border-radius: 20px; }
+        .loader-dot { width: 8px; height: 8px; background: #5865F2; border-radius: 50%; animation: bounceDot 1.4s infinite ease-in-out both; }
+        .loader-dot:nth-child(1) { animation-delay: -0.32s; }
+        .loader-dot:nth-child(2) { animation-delay: -0.16s; }
+
+        @keyframes float { 0%, 100% { transform: translateY(0px); } 50% { transform: translateY(-15px); } }
+        @keyframes blinkEye { 0%, 90%, 100% { transform: scaleY(1); } 95% { transform: scaleY(0.1); } }
+        @keyframes pulseFade { 0%, 100% { opacity: 0.4; transform: scale(0.9); } 50% { opacity: 1; transform: scale(1.1); } }
+        @keyframes spin { 100% { transform: rotate(360deg); } }
+        @keyframes bounceDot { 0%, 80%, 100% { transform: scale(0); opacity: 0.3; } 40% { transform: scale(1); opacity: 1; } }
+
+        .loader-text { color: #b0b3b8; font-size: 16px; font-weight: 500; letter-spacing: 0.5px; animation: textPulse 1.5s ease-in-out infinite; margin-top: 10px;}
+        @keyframes textPulse { 0%, 100% { opacity: 0.5; } 50% { opacity: 1; } }
 
         /* Language Switcher */
         .lang-switcher { position: absolute; top: 20px; right: 20px; display: flex; gap: 5px; background: rgba(255,255,255,0.05); padding: 5px; border-radius: 10px; border: 1px solid rgba(255,255,255,0.1); }
@@ -58,7 +75,32 @@
     </h1>
     <div class="grid" id="servers">
         <div class="loader-container">
-            <div class="loader-spinner"></div>
+            <div class="loader-robot">
+                <svg width="150" height="112" viewBox="0 0 200 150">
+                    <rect x="30" y="60" width="20" height="40" rx="10" fill="#232428"/>
+                    <rect x="150" y="60" width="20" height="40" rx="10" fill="#232428"/>
+                    <rect x="97" y="15" width="6" height="25" fill="#e2e4f0"/>
+                    <circle cx="100" cy="10" r="8" fill="#5865F2"/>
+                    <rect x="40" y="35" width="120" height="85" rx="30" fill="#e2e4f0"/>
+                    <rect x="55" y="50" width="90" height="55" rx="15" fill="#1e1f22"/>
+                    <circle cx="78" cy="77" r="14" fill="#5865F2" class="robot-eye" style="transform-origin: 78px 77px;"/>
+                    <circle cx="122" cy="77" r="14" fill="#5865F2" class="robot-eye" style="transform-origin: 122px 77px;"/>
+                </svg>
+            </div>
+            <div class="loader-icons">
+                <svg class="loader-icon icon-checklist" viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M9 11l3 3L22 4" stroke="#5865F2"/><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/><circle cx="9" cy="5" r="1" fill="#4f545c" stroke="none"/><circle cx="9" cy="15" r="1" fill="#4f545c" stroke="none"/><path d="M12 5h6"/><path d="M12 15h6"/>
+                </svg>
+                <svg class="loader-icon icon-gear" viewBox="0 0 24 24" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <circle cx="12" cy="12" r="3" fill="#0f1012"></circle><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"></path>
+                </svg>
+                <svg class="loader-icon icon-shield" viewBox="0 0 24 24" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"></path><path d="M9 12l2 2 4-4" stroke="#fff" stroke-width="3" fill="none"></path>
+                </svg>
+            </div>
+            <div class="loader-dots">
+                <div class="loader-dot"></div><div class="loader-dot"></div><div class="loader-dot"></div>
+            </div>
             <div class="loader-text" data-i18n="loading">Поиск ваших серверов...</div>
         </div>
     </div>
