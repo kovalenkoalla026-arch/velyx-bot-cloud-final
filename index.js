@@ -278,6 +278,10 @@ app.get('/', (req, res) => {
 });
 
 app.get('/servers', (req, res) => {
+    res.redirect('/servers-page');
+});
+
+app.get('/servers-page', (req, res) => {
     if (!req.session.token) return res.redirect('/');
     res.setHeader('Cache-Control', 'no-store, no-cache, must-revalidate, private');
     res.sendFile('servers.html', { root: path.join(__dirname, 'public') });
