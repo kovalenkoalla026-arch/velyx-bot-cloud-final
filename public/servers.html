@@ -47,7 +47,7 @@
         <button class="lang-btn" onclick="setLanguage('en')" id="btn-en">EN</button>
     </div>
 
-    <h1 style="display: flex; align-items: center; justify-content: center; gap: 15px; margin-top: 20px;">
+    <h1 id="page-title" style="display: none; align-items: center; justify-content: center; gap: 15px; margin-top: 20px;">
         <span data-i18n="select_server">Выберете</span> 
         <span style="display: flex; align-items: center; gap: 8px;">
             <svg width="32" height="32" viewBox="0 0 127.14 96.36" fill="#5865F2">
@@ -196,7 +196,10 @@
 
         function renderServers() {
             const container = document.getElementById('servers');
+            const pageTitle = document.getElementById('page-title');
             if (!globalData || !globalData.servers) return;
+            
+            pageTitle.style.display = 'flex';
             
             const lang = localStorage.getItem('lang') || 'ru';
             const servers = globalData.servers;
