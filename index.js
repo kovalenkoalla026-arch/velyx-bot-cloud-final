@@ -1,180 +1,253 @@
 require('dotenv').config();
-const { Client, GatewayIntentBits, ActionRowBuilder, ButtonBuilder, ButtonStyle, ModalBuilder, TextInputBuilder, TextInputStyle, EmbedBuilder, REST, Routes, SlashCommandBuilder, PermissionsBitField, ChannelType, AuditLogEvent } = require('discord.js');
+const { 
+    Client, 
+    GatewayIntentBits, 
+    ActionRowBuilder, 
+    ButtonBuilder, 
+    ButtonStyle, 
+    ModalBuilder, 
+    TextInputBuilder, 
+    TextInputStyle,
+    EmbedBuilder,
+    REST,
+    Routes,
+    SlashCommandBuilder
+} = require('discord.js');
 const express = require('express');
 const session = require('express-session');
+const mongoose = require('mongoose');
 const MongoStore = require('connect-mongo');
+const bodyParser = require('body-parser');
 const path = require('path');
 const cors = require('cors');
-const mongoose = require('mongoose');
+const fs = require('fs');
 
+const PORT = process.env.PORT || 3000;
 const CLIENT_ID = process.env.CLIENT_ID;
 const CLIENT_SECRET = process.env.CLIENT_SECRET;
-const PORT = process.env.PORT || 3000;
-const REDIRECT_URI = process.env.REDIRECT_URI || `http://localhost:${PORT}/api/auth/callback`;
+const REDIRECT_URI = process.env.REDIRECT_URI || 'http://localhost:' + PORT + '/api/auth/callback';
 
-mongoose.connect(process.env.MONGODB_URI)
-  .then(() => console.log('Connected to MongoDB'))
-  .catch(err => console.error('MongoDB Connection Error:', err));
-
+// --- DATABASE SETUP ---
 const guildConfigSchema = new mongoose.Schema({
-        guildId: { type: String, required: true, unique: true },
-        logChannelId: { type: String, default: '' },
-        adminChannelId: { type: String, default: '' },
-        recruitment: {
-                  title: { type: String, default: 'Recruitment' },
-                  description: { type: String, default: 'Click the button below to apply.' }
-        }
+      guildId: { type: String, required: true, unique: true },
+      logChannelId: { type: String, default: '' },
+      adminChannelId: { type: String, default: '' },
+      logging: {
+                channels: {
+                              joins: { type: String, default: '' },
+                              server: { type: String, default: '' },
+                              voice: { type: String, default: '' },
+                              messages: { type: String, default: '' },
+                              leaves: { type: String, default: '' }
+                },
+                events: {
+                              channelCreate: { type: Boolean, default: false },
+                              channelUpdate: { type: Boolean, default: false },
+                              channelDelete: { type: Boolean, default: false },
+                              roleCreate: { type: Boolean, default: false },
+                              roleUpdate: { type: Boolean, default: false },
+                              roleDelete: { type: Boolean, default: false },
+                              guildUpdate: { type: Boolean, default: false },
+                              emojiUpdate: { type: Boolean, default: false },
+                              memberRoleUpdate: { type: Boolean, default: false },
+                              memberNameUpdate: { type: Boolean, default: false },
+                              memberAvatarUpdate: { type: Boolean, default: false },
+                              memberBan: { type: Boolean, default: false },
+                              memberUnban: { type: Boolean, default: false },
+                              memberTimeout: { type: Boolean, default: false },
+                              memberTimeoutRemove: { type: Boolean, default: false },
+                              memberJoin: { type: Boolean, default: false },
+                              memberLeave: { type: Boolean, default: false },
+                              voiceJoin: { type: Boolean, default: false },
+                              voiceMove: { type: Boolean, default: false },
+                              voiceLeave: { type: Boolean, default: false },
+                              messageDelete: { type: Boolean, default: false },
+                              messageEdit: { type: Boolean, default: false },
+                              messageBulkDelete: { type: Boolean, default: false }
+                },
+                ignoredChannels: { type: [String], default: [] }
+      },
+      recruitment: {
+                open: { type: Boolean, default: false },
+                title: { type: String, default: '\uD83D\uDCE9 \u041F\u043E\u0434\u0430\u0447\u0430 \u0437\u0430\u044F\u0432\u043E\u043A' },
+                description: { type: String, default: '\u041D\u0430\u0436\u043C\u0438\u0442\u0435 \u043D\u0430 \u043A\u043D\u043E\u043F\u043A\u0443 \u043D\u0438\u0436\u0435, \u0447\u0442\u043E\u0431\u044B \u043F\u043E\u0434\u0430\u0442\u044C \u0437\u0430\u044F\u0432\u043A\u0443.' },
+                questions: { type: Array, default: [] },
+                approvalRole: { type: String, default: '' },
+                approvalMessage: { type: String, default: '' }
+      },
+      automod: {
+                antiInvite: { type: Boolean, default: false },
+                antiLink: { type: Boolean, default: false },
+                antiSpam: { type: Boolean, default: false },
+                punishment: { type: String, default: 'none' }
+      },
+      activePanels: { type: Map, of: Object, default: {} },
+      liveStats: {
+                channelId: { type: String },
+                messageId: { type: String }
+      }
 });
-const GuildConfig = mongoose.model('GuildConfig', guildConfigSchema);
-
 const statsSchema = new mongoose.Schema({
-        id: { type: String, default: 'global' },
-        messagesToday: { type: Number, default: 0 },
-        lastResetDate: { type: Date, default: Date.now }
+      id: { type: String, required: true, unique: true },
+      messagesToday: { type: Number, default: 0 },
+      lastResetDate: { type: String, default: new Date().toDateString() }
 });
-const Stats = mongoose.model('Stats', statsSchema);
-const Stats = mongoose.model('Stats', statsSchema);
 
-const forensicsSchema = new mongoose.Schema({
-        userId: { type: String, required: true, unique: true },
-        nicknames: [String],
-        avatars: [String],
-        ghostPings: { type: Number, default: 0 }
+const applicationSchema = new mongoose.Schema({
+      guildId: String,
+      userId: String,
+      userTag: String,
+      userAvatar: String,
+      panelId: String,
+      panelTitle: String,
+      answers: Array,
+      status: { type: String, default: 'pending' },
+      rejectionReason: String,
+      createdAt: { type: Date, default: Date.now }
 });
-const Forensics = mongoose.model('Forensics', forensicsSchema);
 
-const client = new Client({
-        intents: [
-                  GatewayIntentBits.Guilds,
-                  GatewayIntentBits.GuildMessages,
-                  GatewayIntentBits.MessageContent,
-                  GatewayIntentBits.GuildMembers,
-                  GatewayIntentBits.GuildVoiceStates,
-                  GatewayIntentBits.GuildPresences
-                ]
+const recruitmentPanelSchema = new mongoose.Schema({
+      guildId: String,
+      channelId: String,
+      messageId: String,
+      title: String,
+      status: { type: String, default: 'open' },
+      createdAt: { type: Date, default: Date.now }
 });
+
+const GuildConfig = mongoose.model('GuildConfig', guildConfigSchema);
+const Stats = mongoose.model('Stats', statsSchema);
+const Application = mongoose.model('Application', applicationSchema);
+const RecruitmentPanel = mongoose.model('RecruitmentPanel', recruitmentPanelSchema);
 
 const app = express();
-app.use(cors());
-app.use(express.json());
-app.use(express.urlencoded({ extended: true }));
+const client = new Client({
+    intents: [
+          GatewayIntentBits.Guilds,
+          GatewayIntentBits.GuildMessages,
+          GatewayIntentBits.MessageContent,
+          GatewayIntentBits.GuildMembers,
+          GatewayIntentBits.GuildPresences,
+          GatewayIntentBits.GuildVoiceStates,
+          GatewayIntentBits.GuildModeration,
+          GatewayIntentBits.GuildInvites
+        ]
+});
+
+app.use(bodyParser.json());
 app.use(express.static(path.join(__dirname, 'public')));
 
-app.use(session({
-        secret: 'velyx-secret-key',
-        resave: false,
-        saveUninitialized: false,
-        store: MongoStore.create({ mongoUrl: process.env.MONGODB_URI }),
-        cookie: { maxAge: 1000 * 60 * 60 * 24 }
-}));
-
-// Helper: send logs
-async function sendLog(guild, embed) {
-        const config = await GuildConfig.findOne({ guildId: guild.id });
-        if (config && config.logChannelId) {
-                  const channel = guild.channels.cache.get(config.logChannelId);
-                  if (channel) channel.send({ embeds: [embed] });
-        }
+async function getConfig(guildId) {
+      let conf = await GuildConfig.findOne({ guildId });
+      if (!conf) {
+                conf = new GuildConfig({ guildId });
+                await conf.save();
+      }
+      return conf;
 }
-// Routes
-app.get('/', (req, res) => res.sendFile(path.join(__dirname, 'public', 'index.html')));
 
-app.get('/api/auth/login', (req, res) => {
-        const url = `https://discord.com/api/oauth2/authorize?client_id=${CLIENT_ID}&redirect_uri=${encodeURIComponent(REDIRECT_URI)}&response_type=code&scope=identify%20guilds`;
-        res.redirect(url);
+async function saveConfig(guildId, config) {
+      await GuildConfig.findOneAndUpdate({ guildId }, config, { upsert: true });
+}
+
+async function getStats(guildId) {
+      let stats = await Stats.findOne({ id: guildId });
+      if (!stats) {
+                stats = new Stats({ id: guildId });
+                await stats.save();
+      }
+      return stats;
+}
+
+async function updateStats(guildId, count = 1) {
+      const stats = await getStats(guildId);
+      const today = new Date().toDateString();
+      if (stats.lastResetDate !== today) {
+                stats.messagesToday = 0;
+                stats.lastResetDate = today;
+      }
+      stats.messagesToday += count;
+      await stats.save();
+      return stats;
+}
+
+async function sendLog(guildId, embed, type, sourceChannelId = null) {
+    const config = await getConfig(guildId);
+    if (!config || !config.logging) return;
+    if (sourceChannelId && config.logging.ignoredChannels?.includes(sourceChannelId)) return;
+
+  const categoryMap = {
+        channelCreate: 'server', channelUpdate: 'server', channelDelete: 'server',
+        roleCreate: 'server', roleUpdate: 'server', roleDelete: 'server',
+        guildUpdate: 'server', emojiUpdate: 'server',
+        memberRoleUpdate: 'members', memberNameUpdate: 'members', memberAvatarUpdate: 'members',
+        memberBan: 'members', memberUnban: 'members', memberTimeout: 'members',
+        memberJoin: 'joins', memberLeave: 'leaves',
+        voiceJoin: 'voice', voiceMove: 'voice', voiceLeave: 'voice',
+        messageDelete: 'messages', messageEdit: 'messages'
+  };
+
+  const category = categoryMap[type] || 'default';
+    const isEnabled = config.logging.events?.[type];
+    if (!isEnabled) return;
+
+  const targetChannelId = config.logging.channels?.[category] || config.logChannelId;
+    if (!targetChannelId || targetChannelId === 'disabled') return;
+
+  try {
+        const guild = client.guilds.cache.get(guildId);
+        const channel = await guild.channels.fetch(targetChannelId).catch(() => null);
+        if (channel) await channel.send({ embeds: [embed] }).catch(() => {});
+  } catch (err) {}
+}
+
+client.on('messageCreate', async (message) => {
+      if (message.author?.bot || !message.guild) return;
+      await updateStats('global');
+      await updateStats(message.guild.id);
 });
 
-app.get('/api/auth/callback', async (req, res) => {
-        const code = req.query.code;
-        if (!code) return res.redirect('/');
-        try {
-                  const response = await fetch('https://discord.com/api/oauth2/token', {
-                              method: 'POST',
-                              body: new URLSearchParams({
-                                            client_id: CLIENT_ID,
-                                            client_secret: CLIENT_SECRET,
-                                            grant_type: 'authorization_code',
-                                            code: code,
-                                            redirect_uri: REDIRECT_URI
-                              }),
-                              headers: { 'Content-Type': 'application/x-www-form-urlencoded' }
-                  });
-                  const data = await response.json();
-                  req.session.token = data.access_token;
-                  res.redirect('/panel');
-        } catch (err) {
-                  res.status(500).send(err.message);
-        }
+client.on('messageDelete', async message => {
+    if (message.author?.bot || !message.guild) return;
+    const embed = new EmbedBuilder().setTitle('\uD83D\uDDD1 \u0421\u043E\u043E\u0431\u0449\u0435\u043D\u0438\u0435 \u0443\u0434\u0430\u043B\u0435\u043D\u043E').setColor('#ff4757')
+      .addFields(
+        { name: '\u0410\u0432\u0442\u043E\u0440', value: (message.author?.tag || '\u041D\u0435\u0438\u0437\u0432\u0435\u0441\u0442\u043D\u043E') + ' (<@' + (message.author?.id || '?') + '>)', inline: true },
+        { name: '\u041A\u0430\u043D\u0430\u043B', value: '<#' + message.channelId + '>', inline: true },
+        { name: '\u0421\u043E\u0434\u0435\u0440\u0436\u0438\u043C\u043E\u0435', value: message.content || '*[\u0411\u0435\u0437 \u0442\u0435\u043A\u0441\u0442\u0430]*' }
+            ).setTimestamp();
+    await sendLog(message.guild.id, embed, 'messageDelete', message.channelId);
 });
 
-app.get('/api/guilds', async (req, res) => {
-        if (!req.session.token) return res.status(401).send('Unauthorized');
-        const response = await fetch('https://discord.com/api/users/@me/guilds', {
-                  headers: { Authorization: `Bearer ${req.session.token}` }
-        });
-        const guilds = await response.json();
-        res.json(guilds.filter(g => (g.permissions & 0x8) === 0x8));
+client.on('guildMemberAdd', async member => {
+    const embed = new EmbedBuilder().setTitle('\uD83D\uDCE5 \u041D\u043E\u0432\u044B\u0439 \u0443\u0447\u0430\u0441\u0442\u043D\u0438\u043A').setColor('#2ed573')
+      .addFields(
+        { name: '\u041F\u043E\u043B\u044C\u0437\u043E\u0432\u0430\u0442\u0435\u043B\u044C', value: member.user.tag + ' (<@' + member.id + '>)' },
+        { name: '\u0410\u043A\u043A\u0430\u0443\u043D\u0442 \u0441\u043E\u0437\u0434\u0430\u043D', value: '<t:' + Math.floor(member.user.createdTimestamp / 1000) + ':R>' }
+            ).setTimestamp();
+    await sendLog(member.guild.id, embed, 'memberJoin');
 });
+
 app.get('/api/config/:guildId', async (req, res) => {
-        const config = await GuildConfig.findOne({ guildId: req.params.guildId });
-        res.json(config || {});
+      try {
+                const guild = client.guilds.cache.get(req.params.guildId);
+                const config = await getConfig(req.params.guildId);
+                const channels = guild ? Array.from(guild.channels.cache.values())
+                              .filter(c => c.type === 0 || c.type === 5)
+                              .map(c => ({ id: c.id, name: c.name })) : [];
+                res.json({ config, channels, guild: guild ? { name: guild.name, icon: guild.iconURL() } : null });
+      } catch (e) { res.status(500).json({ error: e.message }); }
 });
 
 app.post('/api/config/:guildId', async (req, res) => {
-        await GuildConfig.findOneAndUpdate(
-              { guildId: req.params.guildId },
-              { $set: req.body },
-              { upsert: true }
-                );
-        res.sendStatus(200);
+      try {
+                await saveConfig(req.params.guildId, req.body);
+                res.json({ success: true });
+      } catch (e) { res.status(500).json({ error: e.message }); }
 });
 
-// Discord Events
-client.once('ready', () => {
-        console.log(`Logged in as ${client.user.tag}`);
+client.on('ready', () => {
+      console.log('Logged in as ' + client.user.tag);
 });
 
-client.on('messageCreate', async message => {
-        if (message.author.bot) return;
-
-            // Simple Stats
-            await Stats.findOneAndUpdate({ id: 'global' }, { $inc: { messagesToday: 1 } }, { upsert: true });
-
-            // Simple Automod (Anti-Link)
-            const config = await GuildConfig.findOne({ guildId: message.guild.id });
-        if (config && config.automod && config.automod.antiLink) {
-                  if (message.content.includes('http')) {
-                              message.delete();
-                              message.channel.send(`${message.author}, links are not allowed!`).then(m => setTimeout(() => m.delete(), 3000));
-                  }
-        }
-});
-
-client.on('interactionCreate', async interaction => {
-        if (interaction.isChatInputCommand()) {
-                  if (interaction.commandName === 'setup-recruitment') {
-                              const config = await GuildConfig.findOne({ guildId: interaction.guild.id });
-                              const embed = new EmbedBuilder()
-                                .setTitle(config?.recruitment?.title || 'Recruitment')
-                                .setDescription(config?.recruitment?.description || 'Click to apply')
-                                .setColor('#0099ff');
-                              const row = new ActionRowBuilder().addComponents(
-                                            new ButtonBuilder().setCustomId('apply_btn').setLabel('Apply').setStyle(ButtonStyle.Primary)
-                                          );
-                              await interaction.reply({ embeds: [embed], components: [row] });
-                  }
-        }
-
-            if (interaction.isButton()) {
-                      if (interaction.customId === 'apply_btn') {
-                                  const modal = new ModalBuilder().setCustomId('apply_modal').setTitle('Application');
-                                  const input = new TextInputBuilder().setCustomId('reason').setLabel('Why join?').setStyle(TextInputStyle.Paragraph);
-                                  modal.addComponents(new ActionRowBuilder().addComponents(input));
-                                  await interaction.showModal(modal);
-                      }
-            }
-});
-
-// Start
-app.listen(PORT, () => console.log(`Web server on port ${PORT}`));
+app.listen(PORT, () => console.log('Server running on port ' + PORT));
 client.login(process.env.DISCORD_TOKEN);
