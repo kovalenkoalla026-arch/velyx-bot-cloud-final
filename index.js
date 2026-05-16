@@ -792,6 +792,7 @@ app.post('/api/structure/:guildId', checkAuth, async (req, res) => {
 app.post('/api/send-panel/:guildId', checkAuth, async (req, res) => {
   const guildId = req.params.guildId;
   const config = await getConfig(guildId);
+  try {
     const channel = await client.channels.fetch(req.body.channelId);
     if (!channel || channel.guildId !== guildId) return res.status(404).json({ error: 'Канал не найден или не принадлежит серверу' });
 
