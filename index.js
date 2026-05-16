@@ -70,6 +70,16 @@ const guildConfigSchema = new mongoose.Schema({
 const GuildConfig = mongoose.model('GuildConfig', guildConfigSchema);
 
 // --- STATISTICS SCHEMA ---
+const recruitmentPanelSchema = new mongoose.Schema({
+    guildId: String,
+    channelId: String,
+    messageId: String,
+    title: String,
+    status: { type: String, default: 'open' }, // 'open', 'closed'
+    createdAt: { type: Date, default: Date.now }
+});
+const RecruitmentPanel = mongoose.model('RecruitmentPanel', recruitmentPanelSchema);
+
 const statsSchema = new mongoose.Schema({
     id: { type: String, default: 'global' },
     messagesToday: { type: Number, default: 0 },
@@ -399,6 +409,56 @@ async function handleOAuthCallback(req, res) {
 // Register both paths so Discord OAuth works regardless of which redirect URI was set
 app.get('/api/auth/callback', handleOAuthCallback);
 app.get('/auth/discord/callback', handleOAuthCallback);
+
+app.get('/api/recruitment-panels/:guildId', checkAuth, async (req, res) => {
+    try {
+        const panels = await RecruitmentPanel.find({ guildId: req.params.guildId }).sort({ createdAt: -1 });
+        res.json(panels);
+    } catch (err) { res.status(500).json({ error: 'Failed to fetch panels' }); }
+});
+
+app.post('/api/manage-panel/:guildId/:messageId', checkAuth, async (req, res) => {
+    const { action } = req.body; // 'close', 'open', 'delete'
+    const { guildId, messageId } = req.params;
+
+    try {
+        const panel = await RecruitmentPanel.findOne({ guildId, messageId });
+        if (!panel) return res.status(404).json({ error: 'Panel not found' });
+
+        const channel = await client.channels.fetch(panel.channelId).catch(() => null);
+        const message = channel ? await channel.messages.fetch(messageId).catch(() => null) : null;
+
+        if (action === 'delete') {
+            if (message) await message.delete().catch(() => {});
+            await RecruitmentPanel.deleteOne({ _id: panel._id });
+            return res.json({ success: true });
+        }
+
+        panel.status = action === 'close' ? 'closed' : 'open';
+        await panel.save();
+
+        // Update message appearance
+        if (message && message.embeds[0]) {
+            const embed = EmbedBuilder.from(message.embeds[0]);
+            embed.setFooter({ text: panel.status === 'closed' ? '🔴 ПРИЕМ ЗАКРЫТ' : '🟢 ПРИЕМ ОТКРЫТ' });
+            
+            const row = new ActionRowBuilder().addComponents(
+                new ButtonBuilder()
+                    .setCustomId('start_app')
+                    .setLabel(panel.status === 'closed' ? 'Прием закрыт' : '📩 Подать заявку')
+                    .setStyle(panel.status === 'closed' ? ButtonStyle.Secondary : ButtonStyle.Primary)
+                    .setDisabled(panel.status === 'closed')
+            );
+
+            await message.edit({ embeds: [embed], components: [row] }).catch(() => {});
+        }
+
+        res.json({ success: true, status: panel.status });
+    } catch (err) { 
+        console.error(err);
+        res.status(500).json({ error: 'Failed' }); 
+    }
+});
 
 app.get('/api/auth/me', async (req, res) => {
     if (!req.session.token) return res.status(401).json({ error: 'Unauthorized' });
@@ -1402,10 +1462,16 @@ client.on('interactionCreate', async interaction => {
   }
 
   if (interaction.isButton()) {
-    if (interaction.customId.startsWith('apply_modal_') || interaction.customId === 'open_apply_modal') {
+    if (interaction.customId.startsWith('apply_modal_') || interaction.customId === 'open_apply_modal' || interaction.customId === 'start_app') {
         try {
+            // Проверка статуса конкретной панели
+            const panel = await RecruitmentPanel.findOne({ messageId: interaction.message.id });
+            if (panel && panel.status === 'closed') {
+                return interaction.reply({ content: '❌ Извините, прием заявок по этому объявлению уже закрыт.', ephemeral: true });
+            }
+            
             // config is already awaited in outer scope
-            if (!config.recruitment.open) return interaction.reply({ content: 'Набор закрыт.', ephemeral: true });
+            if (!config.recruitment.open && !panel) return interaction.reply({ content: 'Набор закрыт.', ephemeral: true });
             
             let panelConfig = null;
             let panelId = 'legacy';
@@ -1495,7 +1561,7 @@ client.on('interactionCreate', async interaction => {
   if (interaction.isModalSubmit()) {
     if (interaction.customId.startsWith('submit_modal_')) {
       try {
-        const config = await getConfig(interaction.guild.id);
+    const config = await getConfig(interaction.guild.id);
         const panelId = interaction.customId.replace('submit_modal_', '');
         
         let panelConfig = null;
