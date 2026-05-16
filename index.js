@@ -53,7 +53,7 @@ const RecruitmentPanel = mongoose.model('RecruitmentPanel', recruitmentPanelSche
 const app = express();
 const client = new Client({ intents: [ GatewayIntentBits.Guilds, GatewayIntentBits.GuildMessages, GatewayIntentBits.MessageContent, GatewayIntentBits.GuildMembers, GatewayIntentBits.GuildPresences, GatewayIntentBits.GuildVoiceStates, GatewayIntentBits.GuildModeration, GatewayIntentBits.GuildInvites ] });
 
-mongoose.connect(process.env.MONGO_URI);
+mongoose.connect(process.env.MONGO_URI || '').then(() => console.log('MongoDB connected')).catch(err => console.error('MongoDB connection error:', err.message));
 
 app.use(session({ secret: 'velyx-secret-key-1337', resave: false, saveUninitialized: false, store: MongoStore.create({ mongoUrl: process.env.MONGO_URI }) }));
 app.use(bodyParser.json());
