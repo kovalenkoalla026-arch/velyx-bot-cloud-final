@@ -406,7 +406,10 @@
                     <!-- Сообщения -->
                     <div class="log-category-card">
                         <div class="setting-item">
-                            <span>💬 Сообщения</span>
+                            <div>
+                                <div style="font-weight: 600;">💬 Сообщения</div>
+                                <div style="font-size: 11px; color: var(--text-dim);">Логирует каждое новое сообщение в чатах</div>
+                            </div>
                             <label class="switch"><input type="checkbox" id="logMessages_en" onchange="markUnsaved()"><span class="slider"></span></label>
                         </div>
                         <select id="logMessages_ch" class="small-select" onchange="markUnsaved()"><option value="">Основной канал</option></select>
@@ -415,7 +418,10 @@
                     <!-- Правки/Удаления -->
                     <div class="log-category-card">
                         <div class="setting-item">
-                            <span>🗑️ Удаления/Правки</span>
+                            <div>
+                                <div style="font-weight: 600;">🗑️ Удаления/Правки</div>
+                                <div style="font-size: 11px; color: var(--text-dim);">Отслеживает удаленные и измененные сообщения</div>
+                            </div>
                             <label class="switch"><input type="checkbox" id="logDeletions_en" onchange="markUnsaved()"><span class="slider"></span></label>
                         </div>
                         <select id="logDeletions_ch" class="small-select" onchange="markUnsaved()"><option value="">Основной канал</option></select>
@@ -424,7 +430,10 @@
                     <!-- Участники -->
                     <div class="log-category-card">
                         <div class="setting-item">
-                            <span>👥 Вход/Выход</span>
+                            <div>
+                                <div style="font-weight: 600;">👥 Вход/Выход</div>
+                                <div style="font-size: 11px; color: var(--text-dim);">Регистрирует новых и ушедших участников</div>
+                            </div>
                             <label class="switch"><input type="checkbox" id="logMembers_en" onchange="markUnsaved()"><span class="slider"></span></label>
                         </div>
                         <select id="logMembers_ch" class="small-select" onchange="markUnsaved()"><option value="">Основной канал</option></select>
@@ -433,7 +442,10 @@
                     <!-- Голос -->
                     <div class="log-category-card">
                         <div class="setting-item">
-                            <span>🔊 Голосовые</span>
+                            <div>
+                                <div style="font-weight: 600;">🔊 Голосовые</div>
+                                <div style="font-size: 11px; color: var(--text-dim);">Логирует активность в голосовых каналах</div>
+                            </div>
                             <label class="switch"><input type="checkbox" id="logVoice_en" onchange="markUnsaved()"><span class="slider"></span></label>
                         </div>
                         <select id="logVoice_ch" class="small-select" onchange="markUnsaved()"><option value="">Основной канал</option></select>
