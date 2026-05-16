@@ -1,20 +1,44 @@
-# Velyx Bot & Recruitment Portal
-Advanced Discord bot with OSINT capabilities and an administrative web dashboard.
+# Velyx Bot: Полное описание функционала
 
-## Features
-- **Application System**: Professional recruitment workflow with modals and admin approvals.
-- **Auto-Mod**: Built-in protection against invites, links, and spam.
-- **OSINT (Archived)**: Deep user analysis tools (stored in `user_info_archive.js`).
-- **Web Dashboard**: Manage your server settings via a premium web interface.
-- **MongoDB Integration**: 24/7 persistence for all configurations and statistics.
+Профессиональный Discord-бот с продвинутой веб-панелью управления, системой рекрутинга и автоматизацией структуры сервера.
 
-## Deployment
-This project is ready for deployment on **Railway** or **Render**.
-1. Set the environment variables as defined in `.env.example`.
-2. Connect a MongoDB database via `MONGODB_URI`.
-3. The bot will automatically rebrand to **Velyx** on start.
+## 📊 1. Аналитика (Analytics)
+- **Веб-панель**: Сбор данных о количестве участников, активных пользователях за последние 24 часа и статистике сообщений. Наглядный график активности.
+- **Discord**: Бот отслеживает каждое сообщение и изменение статуса, сохраняя статистику в базу данных MongoDB.
 
-## Tech Stack
-- **Backend**: Node.js, Express, Discord.js
-- **Database**: MongoDB (Mongoose)
-- **Frontend**: HTML5, Vanilla CSS (Premium Design)
+## 🛡 2. Авто-модерация (Auto-Mod)
+- **Anti-Invite**: Мгновенное удаление ссылок на другие Discord-серверы.
+- **Anti-Link**: Блокировка любых внешних ссылок (настраивается).
+- **Анти-спам**: Контроль скорости отправки сообщений.
+- **Наказания**: Выбор между удалением сообщения, мутом (тайм-аут) или баном прямо из панели.
+
+## 📝 3. Логи сервера (Server Logs)
+- Отслеживание удаления и редактирования сообщений.
+- Логирование входа/выхода участников (с проверкой возраста аккаунта).
+- Переходы в голосовых каналах.
+- Все события отправляются в выбранный вами канал.
+
+## 📩 4. Система заявок (Recruitment)
+- **Конструктор анкет**: Создание до 5 вопросов через веб-интерфейс.
+- **Интерактивные модалки**: Пользователи заполняют анкету прямо в Discord.
+- **Управление**: Заявки приходят в админ-канал с кнопками «Принять» и «Отклонить».
+- **Авто-роль**: Автоматическая выдача роли при одобрении заявки.
+
+## 📜 5. Управление правилами (Rules)
+- **Блочный редактор**: Создание правил с заголовками, текстом и картинками.
+- **Вебхуки**: Публикация правил от имени бота с профессиональным оформлением.
+- **Live Preview**: Визуальный предпросмотр перед отправкой.
+
+## 🛠 6. Структура сервера (Server Structure)
+- **Шаблоны**: Готовые пресеты для разных типов сообществ.
+- **Дерево каналов**: Визуальное планирование категорий и каналов в браузере.
+- **Авто-развертывание**: Бот создает всю структуру на сервере за считанные секунды.
+
+## 🌐 Особенности Веб-панели
+- **Premium UI**: Современный дизайн в стиле Discord (Dark Mode, Outfit font).
+- **Mobile Friendly**: Полная адаптация под мобильные устройства.
+- **Live Preview**: Живое отображение эмбедов и кнопок в процессе настройки.
+- **Safe Save**: Система уведомлений о несохраненных изменениях.
+
+---
+*Разработано специально для Velyx Ecosystem.*
