@@ -423,8 +423,17 @@
             <div class="card">
                 <div class="card-header">🛠️ Конструктор каналов</div>
                 <div id="templateEditor"></div>
-                <button class="btn btn-ghost" onclick="addCategory()" style="margin-right: 10px;">➕ Категория</button>
-                <button class="btn btn-primary" onclick="applyStructure()">🚀 Применить к серверу</button>
+                <div class="setting-item" style="margin-top: 20px; background: rgba(255,66,69,0.05); padding: 15px; border-radius: 12px; border: 1px solid rgba(255,66,69,0.2);">
+                    <div>
+                        <div style="font-weight: 700; color: var(--danger);">⚠️ Полная синхронизация</div>
+                        <div style="font-size: 12px; color: var(--text-dim);">Если включено, бот УДАЛИТ все каналы, которых нет в списке выше.</div>
+                    </div>
+                    <label class="switch"><input type="checkbox" id="structDeleteOthers"><span class="slider"></span></label>
+                </div>
+                <div style="display: flex; gap: 10px; margin-top: 20px;">
+                    <button class="btn btn-ghost" onclick="addCategory()">➕ Категория</button>
+                    <button class="btn btn-primary" onclick="applyStructure()">🚀 Применить к серверу</button>
+                </div>
             </div>
         </div>
     </div>
@@ -689,14 +698,21 @@
         function addChannel(ci) { customTemplate[ci].channels.push({ name: 'новый-канал', type: 'text' }); renderTemplateEditor(); }
 
         async function applyStructure() {
-            if (!confirm('Это создаст новые категории и каналы на сервере. Продолжить?')) return;
+            const deleteOthers = document.getElementById('structDeleteOthers').checked;
+            let warningMsg = 'Это создаст новые категории и каналы на сервере. Продолжить?';
+            if (deleteOthers) warningMsg = '⚠️ ВНИМАНИЕ: Бот УДАЛИТ все каналы, которых нет в конструкторе! Вы уверены?';
+
+            if (!confirm(warningMsg)) return;
             const btn = document.querySelector('.btn-primary[onclick="applyStructure()"]');
             btn.innerText = '⌛...';
             try {
-                const res = await fetch(`/api/structure/${serverId}`, {
+                const res = await fetch(`/api/apply-structure/${serverId}`, {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ structure: customTemplate })
+                    body: JSON.stringify({ 
+                        structure: customTemplate,
+                        deleteOthers: deleteOthers
+                    })
                 });
                 if (res.ok) showToast('Структура применена!');
                 else alert('Ошибка при создании структуры');
