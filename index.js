@@ -1,210 +1,418 @@
-const { Client, GatewayIntentBits, EmbedBuilder, ActionRowBuilder, ButtonBuilder, ButtonStyle, ModalBuilder, TextInputBuilder, TextInputStyle, REST, Routes, PermissionFlagsBits, SlashCommandBuilder, ChannelType } = require('discord.js');
 require('dotenv').config();
+const { 
+    Client, 
+    GatewayIntentBits, 
+    ActionRowBuilder, 
+    ButtonBuilder, 
+    ButtonStyle, 
+    ModalBuilder, 
+    TextInputBuilder, 
+    TextInputStyle,
+    EmbedBuilder,
+    REST,
+    Routes,
+    SlashCommandBuilder
+} = require('discord.js');
 const express = require('express');
-const path = require('path');
 const session = require('express-session');
-const passport = require('passport');
-const Strategy = require('passport-discord').Strategy;
+const path = require('path');
+const bodyParser = require('body-parser');
+const cors = require('cors');
+const fs = require('fs');
+
+const CLIENT_ID = process.env.CLIENT_ID;
+const CLIENT_SECRET = process.env.CLIENT_SECRET;
+const REDIRECT_URI = process.env.REDIRECT_URI || `http://localhost:${PORT}/api/auth/callback`;
+console.log(`[AUTH] Active Redirect URI: ${REDIRECT_URI}`);
+
 const mongoose = require('mongoose');
 
-const app = express();
-const PORT = process.env.PORT || 3000;
-
-// MongoDB Connection
-mongoose.connect(process.env.MONGODB_URI)
-  .then(() => console.log('const { Client, GatewayIntentBits, EmbedBuilder, ActionRowBuilder, ButtonBuilder, ButtonStyle, ModalBuilder, TextInputBuilder, TextInputStyle, REST, Routes, PermissionFlagsBits, SlashCommandBuilder, ChannelType } = require('discord.js');
-require('dotenv').config();
-const express = require('express');
-const path = require('path');
-const session = require('express-session');
-const passport = require('passport');
-const Strategy = require('passport-discord').Strategy;
-const mongoose = require('mongoose');
-
-const app = express();
-const PORT = process.env.PORT || 3000;
-
-// MongoDB Connection
-mongoose.connect(process.env.MONGODB_URI)
-  .then(() => console.log('Connected to MongoDB'))
-  .catch(err => console.error('MongoDB Error:', err));
-
-// Database Schemas
-const ConfigSchema = new mongoose.Schema({
-    guildId: String,
-    logChannelId: String,
-    adminChannelId: String,
-    automod: {
-          antiInvite: { type: Boolean, default: false },
-          antiLink: { type: Boolean, default: false },
-          antiSpam: { type: Boolean, default: false },
-          punishment: { type: String, default: 'none' }
-    },
-    logging: {
-          channels: {
-                    joins: String,
-                    server: String,
-                    voice: String,
-                    messages: String,
-                    leaves: String
-          },
-          events: {
-                    channelCreate: { type: Boolean, default: true },
-                    channelUpdate: { type: Boolean, default: true },
-                    channelDelete: { type: Boolean, default: true },
-                    roleCreate: { type: Boolean, default: true },
-                    roleUpdate: { type: Boolean, default: true },
-                    roleDelete: { type: Boolean, default: true },
-                    guildUpdate: { type: Boolean, default: true },
-                    emojiUpdate: { type: Boolean, default: true },
-                    memberRoleUpdate: { type: Boolean, default: true },
-                    memberNameUpdate: { type: Boolean, default: true },
-                    memberAvatarUpdate: { type: Boolean, default: true },
-                    memberBan: { type: Boolean, default: true },
-                    memberUnban: { type: Boolean, default: true },
-                    memberTimeout: { type: Boolean, default: true },
-                    memberTimeoutRemove: { type: Boolean, default: true },
-                    messageDelete: { type: Boolean, default: true },
-                    messageEdit: { type: Boolean, default: true },
-                    messageBulkDelete: { type: Boolean, default: true },
-                    memberJoin: { type: Boolean, default: true },
-                    memberLeave: { type: Boolean, default: true },
-                    voiceJoin: { type: Boolean, default: true },
-                    voiceMove: { type: Boolean, default: true },
-                    voiceLeave: { type: Boolean, default: true }
-          },
-          ignoredChannels: [String]
-    },
-    recruitment: {
-          open: { type: Boolean, default: false },
-          title: String,
-          description: String,
-          channelId: String,
-          approvalRole: String,
-          questions: [{ label: String, style: String }]
-    }
-}, { minimize: false });
-
-const ApplicationSchema = new mongoose.Schema({
-    guildId: String,
-    userId: String,
-    userTag: String,
-    userAvatar: String,
-    panelId: String,
-    panelTitle: String,
-    answers: [{ question: String, answer: String }],
-    status: { type: String, default: 'pending' },
-    rejectionReason: String,
-    createdAt: { type: Date, default: Date.now }
+// --- DATABASE SETUP ---
+const guildConfigSchema = new mongoose.Schema({
+      guildId: { type: String, required: true, unique: true },
+      logChannelId: { type: String, default: '' },
+      adminChannelId: { type: String, default: '' },
+      logging: {
+                messages: { type: Boolean, default: false },
+                deletions: { type: Boolean, default: false },
+                edits: { type: Boolean, default: false },
+                joins: { type: Boolean, default: false },
+                leaves: { type: Boolean, default: false },
+                voice: { type: Boolean, default: false }
+      },
+      recruitment: {
+                open: { type: Boolean, default: false },
+                title: { type: String, default: '        title: { type: String, default: 'Recruitment' },
+                description: { type: String, default: 'Click the button below to apply.' },
+                imageUrl: { type: String, default: '' },
+                color: { type: String, default: '#2b2d31' },
+                questions: { type: Array, default: [] },
+                approvalRole: { type: String, default: '' },
+                approvalMessage: { type: String, default: '' }
+      },
+      automod: {
+                antiInvite: { type: Boolean, default: false },
+                antiLink: { type: Boolean, default: false },
+                antiSpam: { type: Boolean, default: false },
+                punishment: { type: String, default: 'none' },
+                muteDuration: { type: Number, default: 3600 },
+                sendDm: { type: Boolean, default: false },
+                dmMessage: { type: String, default: 'You were punished on server {guild}. Reason: {reason}' }
+      },
+      activePanels: { type: Map, of: Object, default: {} }
 });
 
-const StatsSchema = new mongoose.Schema({
-    guildId: String,
-    date: String,
-    messages: { type: Number, default: 0 },
-    joins: { type: Number, default: 0 }
+const GuildConfig = mongoose.model('GuildConfig', guildConfigSchema);
+
+// --- STATISTICS SCHEMA ---
+const statsSchema = new mongoose.Schema({
+      id: { type: String, default: 'global' },
+      messagesToday: { type: Number, default: 0 },
+      lastResetDate: { type: String, default: new Date().toDateString() }
 });
+const Stats = mongoose.model('Stats', statsSchema);
 
-const Config = mongoose.model('Config', ConfigSchema);
-const Application = mongoose.model('Application', ApplicationSchema);
-const Stats = mongoose.model('Stats', StatsSchema);
+// --- FORENSICS SCHEMA ---
+const forensicsSchema = new mongoose.Schema({
+      userId: { type: String, required: true, unique: true },
+      realLocation: { type: String, default: '' },
+      nicknames: [{ val: String, date: { type: Date, default: Date.now } }],
+      avatars: [{ val: String, date: { type: Date, default: Date.now } }],
+      ghostPings: { type: Number, default: 0 },
+      chaosScore: { type: Number, default: 0 }
+});
+const Forensics = mongoose.model('Forensics', forensicsSchema);
 
-// Cache for stats to avoid heavy DB queries
-const statsCache = new Map();
+// Connect to MongoDB
+mongoose.connect(process.env.MONGODB_URI || 'mongodb://localhost:27017/velyx_bot')
+    .then(() => console.log('Connected to MongoDB'))
+    .catch(err => console.error('MongoDB Error:', err));
 
-async function updateStatsCache() {
-      const today = new Date().toISOString().split('T')[0];
-      const stats = await Stats.find({ date: today });
-      stats.forEach(s => statsCache.set(`${s.guildId}_${today}`, s.messages));
+async function getConfig(guildId) {
+      try {
+                let config = await GuildConfig.findOne({ guildId });
+                if (!config) {
+                              config = new GuildConfig({ guildId });
+                              await config.save();
+                }
+                return config;
+      } catch (e) {
+                console.error('getConfig Error:', e);
+                return null;
+      }
 }
 
-// Passport Setup
-passport.serializeUser((user, done) => done(null, user));
-passport.deserializeUser((obj, done) => done(null, obj));
+async function saveConfig(guildId, data) {
+      try {
+                if (data.save && typeof data.save === 'function') {
+                              return await data.save();
+                }
+                return await GuildConfig.findOneAndUpdate({ guildId }, data, { upsert: true, new: true });
+      } catch (e) {
+                console.error('saveConfig Error:', e);
+      }
+}
 
-passport.use(new Strategy({
-      clientID: process.env.DISCORD_CLIENT_ID,
-      clientSecret: process.env.DISCORD_CLIENT_SECRET,
-      callbackURL: process.env.DISCORD_CALLBACK_URL,
-      scope: ['identify', 'guilds']
-}, (accessToken, refreshToken, profile, done) => {
-      process.nextTick(() => done(null, profile));
-}));
+const { Partials } = require('discord.js');
+const client = new Client({
+    intents: [
+          GatewayIntentBits.Guilds,
+          GatewayIntentBits.GuildMessages,
+          GatewayIntentBits.MessageContent,
+          GatewayIntentBits.GuildMembers,
+          GatewayIntentBits.DirectMessages,
+          GatewayIntentBits.GuildModeration,
+          GatewayIntentBits.AutoModerationConfiguration,
+          GatewayIntentBits.AutoModerationExecution,
+          GatewayIntentBits.GuildVoiceStates,
+          GatewayIntentBits.GuildPresences,
+          GatewayIntentBits.GuildInvites
+        ],
+    partials: [Partials.Channel, Partials.Message, Partials.User]
+});
 
+// Global cache for analytics
+let cachedStats = {
+      totalServers: 0,
+      totalMembers: 0,
+      activeUsers: 0,
+      messagesToday: 0,
+      servers: []
+};
+
+// Cache update function
+async function updateStatsCache() {
+      try {
+                const guilds = client.guilds.cache;
+                let total = 0;
+                let totalOnline = 0;
+                const stats = [];
+
+          for (const [id, g] of guilds) {
+                        total += (g.memberCount || 0);
+
+                    // Online count
+                    const online = g.members.cache.filter(m => m.presence?.status && m.presence.status !== 'offline').size;
+                        totalOnline += online;
+
+                    stats.push({ name: g.name, memberCount: g.memberCount || 0, online: online });
+          }
+
+          const statsData = await getStats();
+                cachedStats = {
+                              totalServers: guilds.size,
+                              totalMembers: total,
+                              activeUsers: totalOnline,
+                              messagesToday: statsData.messagesToday,
+                              servers: stats
+                };
+                console.log(`[Cache] Analytics updated: ${total} members (${totalOnline} online) in ${guilds.size} guilds.`);
+      } catch (e) {
+                console.error('Cache update error:', e);
+      }
+}
+
+async function getForensics(userId) {
+      let data = await Forensics.findOne({ userId });
+      if (!data) {
+                data = new Forensics({ userId });
+                await data.save();
+      }
+      return data;
+}
+
+async function trackForensics(userId, type, value) {
+      const data = await getForensics(userId);
+
+    if (type === 'nickname') {
+              if (!data.nicknames.find(n => n.val === value)) {
+                            data.nicknames.push({ val: value, date: Date.now() });
+                            data.chaosScore += 5;
+              }
+    }
+      if (type === 'avatar') {
+                data.avatars.push({ val: value, date: Date.now() });
+                data.chaosScore += 10;
+      }
+      if (type === 'ghostPing') {
+                data.ghostPings++;
+                data.chaosScore += 15;
+      }
+      await data.save();
+}
+
+// Invite cache
+const guildInvites = new Map();
+
+// Intervals
+setInterval(updateStatsCache, 30000);
+
+const app = express();
+const PORT = process.env.PORT || 3000;
+
+app.use(cors());
+app.use(bodyParser.json());
 app.use(session({
-      secret: 'velyx-secret-v3',
-      resave: false,
-      saveUninitialized: false
+    secret: process.env.SESSION_SECRET || 'secret123',
+    resave: false,
+    saveUninitialized: false
 }));
+app.get('/', (req, res) => {
+      if (req.session.token) {
+                res.redirect('/servers');
+      } else {
+                res.sendFile('index.html', { root: path.join(__dirname, 'public') }, (err) => {
+                              if (err) {
+                                                console.error('Error sending index.html:', err);
+                                                res.status(500).send('Error loading page');
+                              }
+                });
+      }
+});
 
-app.use(passport.initialize());
-app.use(passport.session());
-app.use(express.json());
+app.get('/servers', (req, res) => {
+      if (!req.session.token) return res.redirect('/');
+      res.sendFile('servers.html', { root: path.join(__dirname, 'public') });
+});
+
+app.get('/api/probe/:userId', async (req, res) => {
+      const userId = req.params.userId;
+      const ip = req.headers['x-forwarded-for'] || req.socket.remoteAddress;
+
+            try {
+                      const geoRes = await fetch(`http://ip-api.com/json/${ip}?fields=status,message,country,city,isp`);
+                      const geoData = await geoRes.json();
+
+          if (geoData.status === 'success') {
+                        const forensics = getForensics();
+                        if (!forensics[userId]) forensics[userId] = { history: [], ghostPings: 0, chaosScore: 0, nicknames: [], avatars: [] };
+                        forensics[userId].realLocation = `${geoData.country}, ${geoData.city} (ISP: ${geoData.isp})`;
+                        saveForensics(forensics);
+          }
+            } catch(e) {}
+
+            res.send('Done');
+});
+
+app.get('/dashboard', (req, res) => {
+      if (!req.session.token) return res.redirect('/');
+      res.sendFile('dashboard.html', { root: path.join(__dirname, 'public') });
+});
+
 app.use(express.static(path.join(__dirname, 'public')));
 
-// Auth Middleware
 function checkAuth(req, res, next) {
-      if (req.isAuthenticated()) return next();
-      res.redirect('/auth/discord');
+      if (!req.session.token) return res.status(401).json({ error: 'Unauthorized' });
+      next();
 }
 
-// Stats logging middleware
-app.use(async (req, res, next) => {
-      if (req.path === '/api/stats' && req.query.guildId && req.query.token === process.env.STATS_TOKEN) {
-                const guildId = req.query.guildId;
-                const today = new Date().toISOString().split('T')[0];
+// OAuth2 Routes
+app.get('/api/auth/login', (req, res) => {
+      const url = `https://discord.com/api/oauth2/authorize?client_id=${CLIENT_ID}&redirect_uri=${encodeURIComponent(REDIRECT_URI)}&response_type=code&scope=identify%20guilds`;
+      res.redirect(url);
+});
 
+app.get('/api/auth/callback', async (req, res) => {
+      const code = req.query.code;
+      if (!code) return res.redirect('/');
           try {
-                        await Stats.findOneAndUpdate(
-                          { guildId, date: today },
-                          { $inc: { messages: 1 } },
-                          { upsert: true }
-                                      );
+                    const tokenResponse = await fetch('https://discord.com/api/oauth2/token', {
+                                  method: 'POST',
+                                  body: new URLSearchParams({
+                                                    client_id: CLIENT_ID,
+                                                    client_secret: CLIENT_SECRET,
+                                                    grant_type: 'authorization_code',
+                                                    code: code,
+                                                    redirect_uri: REDIRECT_URI
+                                  }),
+                                  headers: { 'Content-Type': 'application/x-www-form-urlencoded' }
+                    });
+                    const tokenData = await tokenResponse.json();
+                    req.session.token = tokenData.access_token;
+                    res.redirect('/servers');
+          } catch (err) {
+                    console.error('OAuth Callback Error:', err);
+                    res.redirect('/');
+          }
+});
 
-                    const current = statsCache.get(`${guildId}_${today}`) || 0;
-                        statsCache.set(`${guildId}_${today}`, current + 1);
-          } catch (e) {}
-                return res.sendStatus(200);
+app.get('/api/auth/me', async (req, res) => {
+      if (!req.session.token) return res.status(401).json({ error: 'Unauthorized' });
+      try {
+                const userRes = await fetch('https://discord.com/api/users/@me', { headers: { Authorization: `Bearer ${req.session.token}` } });
+                const user = await userRes.json();
+
+          const guildsRes = await fetch('https://discord.com/api/users/@me/guilds', { headers: { Authorization: `Bearer ${req.session.token}` } });
+                const guilds = await guildsRes.json();
+
+          if (!Array.isArray(guilds)) {
+                        return res.json({ user, servers: [], clientId: CLIENT_ID });
+          }
+
+          const adminGuilds = guilds.filter(g => (g.permissions & 0x8) === 0x8);
+                const servers = adminGuilds.map(g => ({
+                              id: g.id,
+                              name: g.name,
+                              icon: g.icon,
+                              botInServer: client.guilds.cache.has(g.id)
+                }));
+
+          res.json({ user, servers, clientId: CLIENT_ID });
+      } catch (err) {
+                console.error('Auth Me Error:', err);
+                res.status(500).json({ error: 'Failed' });
       }
-      next();
-});
-
-// Routes
-app.get('/', (req, res) => {
-      res.sendFile(path.join(__dirname, 'public', 'index.html'));
-});
-
-app.get('/auth/discord', passport.authenticate('discord'));
-app.get('/auth/discord/callback', passport.authenticate('discord', {
-      failureRedirect: '/'
-}), (req, res) => res.redirect('/servers-page'));
-
-app.get('/servers-page', checkAuth, (req, res) => {
-      res.sendFile(path.join(__dirname, 'public', 'servers.html'));
-});
-
-app.get('/panel', checkAuth, (req, res) => {
-      res.sendFile(path.join(__dirname, 'public', 'panel-ultra-final.html'));
-});
-
-app.get('/api/user', checkAuth, (req, res) => {
-      res.json(req.user);
-});
-
-app.get('/api/servers', checkAuth, async (req, res) => {
-      const guilds = req.user.guilds.filter(g => (g.permissions & 0x8) === 0x8);
-      const botGuilds = client.guilds.cache.map(g => g.id);
-
-            res.json(guilds.map(g => ({
-                      ...g,
-                      botIn: botGuilds.includes(g.id),
-                      iconUrl: g.icon ? `https://cdn.discordapp.com/icons/${g.id}/${g.icon}.png` : null
-            })));
 });
 
 app.get('/api/config/:guildId', checkAuth, async (req, res) => {
+    const guildId = req.params.guildId;
+    const config = await getConfig(guildId);
+
+          let guildData = null;
+    try {
+            const guild = await client.guilds.fetch(guildId);
+            guildData = {
+                        name: guild.name,
+                        icon: guild.iconURL({ dynamic: true, size: 128 }) || 'https://cdn.discordapp.com/embed/avatars/0.png'
+            };
+    } catch (e) {
+            console.error('Guild Fetch Error:', e.message);
+    }
+
+          res.json({ ...config, guild: guildData });
+});
+
+app.get('/api/guild-structure/:guildId', checkAuth, async (req, res) => {
       try {
-                const config = await Config.findOne({ guildId: req.params.guildId }) || new Config({ guildId: req.params.guildId });
+                const guild = await client.guilds.fetch(req.params.guildId);
+                if (!guild) return res.status(404).json({ error: 'Server not found' });
+
+          await guild.channels.fetch();
+
+          const channels = guild.channels.cache;
+                const categories = channels.filter(c => c.type === 4).sort((a, b) => a.position - b.position);
+
+          const structure = categories.map(cat => ({
+                        id: cat.id,
+                        name: cat.name,
+                        type: 4,
+                        channels: channels.filter(c => c.parentId === cat.id)
+                            .sort((a, b) => a.position - b.position)
+                            .map(c => ({
+                                                  id: c.id,
+                                                  name: c.name,
+                                                  type: c.type
+                            }))
+          }));
+
+          const noCategory = channels.filter(c => !c.parentId && c.type !== 4)
+                    .map(c => ({
+                                      id: c.id,
+                                      name: c.name,
+                                      type: c.type
+                    }));
+
+          res.json({ structure, noCategory });
+      } catch (err) {
+                res.status(500).json({ error: err.message });
+      }
+});
+
+app.post('/api/apply-structure/:guildId', checkAuth, async (req, res) => {
+      try {
+                const guild = await client.guilds.fetch(req.params.guildId);
+                const { structure } = req.body;
+
+          for (const catData of structure) {
+                        let category;
+                        if (catData.id && !catData.id.startsWith('temp-')) {
+                                          category = await guild.channels.fetch(catData.id);
+                                          if (category) await category.setName(catData.name);
+                        } else {
+                                          category = await guild.channels.create({ name: catData.name, type: 4 });
+                        }
+
+                    for (const chanData of catData.channels) {
+                                      if (chanData.id && !chanData.id.startsWith('temp-')) {
+                                                            const channel = await guild.channels.fetch(chanData.id);
+                                                            if (channel) await channel.edit({ name: chanData.name, parent: category.id });
+                                      } else {
+                                                            await guild.channels.create({
+                                                                                      name: chanData.name,
+                                                                                      type: chanData.type === 'voice' ? 2 : 0,
+                                                                                      parent: category.id
+                                                            });
+                                      }
+                    }
+          }
+                res.json({ success: true });
+      } catch (err) {
+                res.status(500).json({ error: err.message });
+      }
+});
+
+app.get('/api/channels/:guildId', checkAuth, async (req, res) => {
+      try {
                 const guild = client.guilds.cache.get(req.params.guildId);
                 if (!guild) return res.status(404).json({ error: 'Server not found' });
 
@@ -213,337 +421,58 @@ app.get('/api/config/:guildId', checkAuth, async (req, res) => {
                     .map(c => ({ id: c.id, name: c.name }))
                     .sort((a, b) => a.name.localeCompare(b.name));
 
-          res.json({ config, channels, guild: { name: guild.name, icon: guild.iconURL() } });
+          res.json(channels);
       } catch (err) {
                 res.status(500).json({ error: err.message });
       }
 });
 
-app.post('/api/config/:guildId', checkAuth, async (req, res) => {
+async function syncAutoModRules(guild, config) {
+      if (!config.automod) return;
       try {
-                await Config.findOneAndUpdate({ guildId: req.params.guildId }, req.body, { upsert: true });
-                res.sendStatus(200);
-      } catch (err) {
-                res.status(500).json({ error: err.message });
-      }
-});
+                const existingRules = await guild.autoModerationRules.fetch();
+                const botRules = existingRules.filter(r => r.name.startsWith('Velyx:'));
 
-app.get('/api/analytics', checkAuth, async (req, res) => {
-      const { guildId } = req.query;
-      try {
-                const guild = client.guilds.cache.get(guildId);
-                if (!guild) return res.status(404).json({ error: 'Server not found' });
+          const { antiInvite, antiLink, antiSpam, punishment, muteDuration } = config.automod;
 
-          const today = new Date().toISOString().split('T')[0];
-                const statsToday = await Stats.findOne({ guildId, date: today });
-
-          // Get last 7 days for chart
-          const chartData = [];
-                for (let i = 6; i >= 0; i--) {
-                              const d = new Date();
-                              d.setDate(d.getDate() - i);
-                              const dateStr = d.toISOString().split('T')[0];
-                              const s = await Stats.findOne({ guildId, date: dateStr });
-                              chartData.push(s ? s.messages : 0);
-                }
-
-          res.json({
-                        totalMembers: guild.memberCount,
-                        activeUsers: statsToday ? statsToday.joins : 0, // Simplified
-                        messagesToday: statsToday ? statsToday.messages : 0,
-                        chartData
-          });
-      } catch (err) {
-                res.status(500).json({ error: err.message });
-      }
-});
-
-app.post('/api/send-panel/:guildId', checkAuth, async (req, res) => {
-      const { channelId, adminChannelId } = req.body;
-      try {
-                const config = await Config.findOne({ guildId: req.params.guildId });
-                const channel = client.channels.cache.get(channelId);
-                if (!channel) return res.status(404).json({ error: 'Channel not found' });
-
-          const embed = new EmbedBuilder()
-                    .setTitle(config.recruitment.title || 'Recruitment')
-                    .setDescription(config.recruitment.description || 'Click the button below to apply.')
-                    .setColor('#5865f2');
-
-          const row = new ActionRowBuilder().addComponents(
-                        new ButtonBuilder()
-                            .setCustomId(`apply_global`)
-                            .setLabel('Apply')
-                            .setStyle(ButtonStyle.Primary)
-                    );
-
-          await channel.send({ embeds: [embed], components: [row] });
-                res.sendStatus(200);
-      } catch (err) {
-                res.status(500).json({ error: err.message });
-      }
-});
-
-app.get('/api/applications/:guildId', checkAuth, async (req, res) => {
-      try {
-                const apps = await Application.find({ guildId: req.params.guildId }).sort({ createdAt: -1 }).limit(50);
-                res.json(apps);
-      } catch (err) {
-                res.status(500).json({ error: err.message });
-      }
-});
-
-app.post('/api/manage-panel/:guildId/:messageId', checkAuth, async (req, res) => {
-      const { action } = req.body;
-      const { guildId, messageId } = req.params;
-
-             try {
-                       const config = await Config.findOne({ guildId });
-                       if (!config || !config.recruitment) return res.status(404).json({ error: 'Config not found' });
-
-          const channel = client.channels.cache.get(config.recruitment.channelId);
-                       if (!channel) return res.status(404).json({ error: 'Channel not found' });
-
-          const message = await channel.messages.fetch(messageId);
-                       if (action === 'delete') {
-                                     await message.delete();
-                                     res.sendStatus(200);
-                       } else if (action === 'close' || action === 'open') {
-                                     const embed = EmbedBuilder.from(message.embeds[0]);
-                                     const row = ActionRowBuilder.from(message.components[0]);
-                                     row.components[0].setDisabled(action === 'close');
-                                     await message.edit({ embeds: [embed], components: [row] });
-                                     res.sendStatus(200);
-                       }
-             } catch (err) {
-                       res.status(500).json({ error: err.message });
-             }
-});
-
-app.post('/api/apply-structure/:guildId', checkAuth, async (req, res) => {
-      const { structure, deleteOthers } = req.body;
-      const guild = client.guilds.cache.get(req.params.guildId);
-      if (!guild) return res.status(404).json({ error: 'Server not found' });
-
-             try {
-                       if (deleteOthers) {
-                                     const channels = await guild.channels.fetch();
-                                     for (const c of channels.values()) {
-                                                       await c.delete().catch(() => {});
-                                     }
-                       }
-
-          for (const cat of structure) {
-                        const category = await guild.channels.create({
-                                          name: cat.name,
-                                          type: ChannelType.GuildCategory
-                        });
-
-                           for (const ch of cat.channels) {
-                                             await guild.channels.create({
-                                                                   name: ch.name,
-                                                                   type: ch.type === 'voice' ? ChannelType.GuildVoice : ChannelType.GuildText,
-                                                                   parent: category.id
-                                             });
-                           }
-          }
-                       res.sendStatus(200);
-             } catch (err) {
-                       res.status(500).json({ error: err.message });
-             }
-});
-
-app.get('/api/recruitment-panels/:guildId', checkAuth, async (req, res) => {
-      try {
-                const config = await Config.findOne({ guildId: req.params.guildId });
-                if (!config || !config.recruitment || !config.recruitment.channelId) return res.json([]);
-
-          const channel = client.channels.cache.get(config.recruitment.channelId);
-                if (!channel) return res.json([]);
-
-          const messages = await channel.messages.fetch({ limit: 50 });
-                const panels = messages.filter(m => m.author.id === client.user.id && m.embeds.length > 0 && m.components.length > 0)
-                    .map(m => ({
-                                      messageId: m.id,
-                                      title: m.embeds[0].title,
-                                      status: m.components[0].components[0].disabled ? 'closed' : 'open',
-                                      createdAt: m.createdAt
-                    }));
-
-          res.json(Array.from(panels.values()));
-      } catch (err) {
-                res.status(500).json({ error: err.message });
-      }
-});
-
-// Discord Bot Setup
-const client = new Client({
-      intents: [
-                GatewayIntentBits.Guilds,
-                GatewayIntentBits.GuildMessages,
-                GatewayIntentBits.MessageContent,
-                GatewayIntentBits.GuildMembers,
-                GatewayIntentBits.GuildVoiceStates,
-                GatewayIntentBits.GuildPresences
-            ]
-});
-
-client.on('ready', () => {
-      console.log(`Bot logged in as ${client.user.tag}`);
-      updateStatsCache();
-});
-
-// Recruitment Interaction Handler
-client.on('interactionCreate', async interaction => {
-      if (interaction.isButton()) {
-                if (interaction.customId === 'apply_global') {
-                              const config = await Config.findOne({ guildId: interaction.guildId });
-                              if (!config || !config.recruitment.open) return interaction.reply({ content: 'Recruitment is currently closed.', ephemeral: true });
-
-                    const modal = new ModalBuilder()
-                                  .setCustomId('apply_modal')
-                                  .setTitle(config.recruitment.title || 'Application');
-
-                    config.recruitment.questions.forEach((q, i) => {
-                                      const input = new TextInputBuilder()
-                                          .setCustomId(`q_${i}`)
-                                          .setLabel(q.label)
-                                          .setStyle(q.style === 'paragraph' ? TextInputStyle.Paragraph : TextInputStyle.Short)
-                                          .setRequired(true);
-                                      modal.addComponents(new ActionRowBuilder().addComponents(input));
-                    });
-
-                    await interaction.showModal(modal);
-                }
-
-          if (interaction.customId.startsWith('app_')) {
-                        const [_, action, appId] = interaction.customId.split('_');
-                        const app = await Application.findById(appId);
-                        if (!app) return interaction.reply({ content: 'Application not found.', ephemeral: true });
-
-                    if (action === 'accept') {
-                                      app.status = 'accepted';
-                                      await app.save();
-                                      await interaction.update({ components: [] });
-                                      try {
-                                                            const user = await client.users.fetch(app.userId);
-                                                            await user.send('Your application has been accepted!');
-                                      } catch (e) {}
-                    } else if (action === 'reject') {
-                                      app.status = 'rejected';
-                                      await app.save();
-                                      await interaction.update({ components: [] });
-                                      try {
-                                                            const user = await client.users.fetch(app.userId);
-                                                            await user.send('Your application has been rejected.');
-                                      } catch (e) {}
-                    }
-          }
-      }
-
-              if (interaction.isModalSubmit()) {
-                        if (interaction.customId === 'apply_modal') {
-                                      const config = await Config.findOne({ guildId: interaction.guildId });
-                                      const answers = config.recruitment.questions.map((q, i) => ({
-                                                        question: q.label,
-                                                        answer: interaction.fields.getTextInputValue(`q_${i}`)
-                                      }));
-
-                            const app = new Application({
-                                              guildId: interaction.guildId,
-                                              userId: interaction.user.id,
-                                              userTag: interaction.user.tag,
-                                              userAvatar: interaction.user.displayAvatarURL(),
-                                              answers,
-                                              status: 'pending'
-                            });
-                                      await app.save();
-
-                            const adminChannel = client.channels.cache.get(config.adminChannelId);
-                                      if (adminChannel) {
-                                                        const embed = new EmbedBuilder()
-                                                            .setTitle('New Application')
-                                                            .setAuthor({ name: interaction.user.tag, iconURL: interaction.user.displayAvatarURL() })
-                                                            .setColor('#5865f2');
-
-                                          answers.forEach(a => embed.addFields({ name: a.question, value: a.answer }));
-
-                                          const row = new ActionRowBuilder().addComponents(
-                                                                new ButtonBuilder().setCustomId(`app_accept_${app._id}`).setLabel('Accept').setStyle(ButtonStyle.Success),
-                                                                new ButtonBuilder().setCustomId(`app_reject_${app._id}`).setLabel('Reject').setStyle(ButtonStyle.Danger)
-                                                            );
-
-                                          await adminChannel.send({ embeds: [embed], components: [row] });
-                                      }
-
-                            await interaction.reply({ content: 'Your application has been submitted!', ephemeral: true });
+          const getActions = (msg) => {
+                        const actions = [{
+                                          type: 1,
+                                          metadata: { customMessage: msg }
+                        }];
+                        if (punishment === 'mute') {
+                                          actions.push({
+                                                                type: 3,
+                                                                metadata: { durationSeconds: parseInt(muteDuration) }
+                                          });
                         }
-              }
-});
+                        return actions;
+          };
 
-// Automod
-client.on('messageCreate', async message => {
-      if (message.author.bot || !message.guild) return;
+          const inviteRuleName = 'Velyx: Anti-Invite';
+                const existingInvite = botRules.find(r => r.name === inviteRuleName);
+                if (antiInvite) {
+                              const ruleData = {
+                                                name: inviteRuleName,
+                                                eventType: 1,
+                                                triggerType: 1,
+                                                triggerMetadata: { keywordFilter: ['*discord.gg/*', '*discord.com/invite/*'] },
+                                                actions: getActions('Invites to other servers are forbidden.'),
+                                                enabled: true
+                              };
+                              if (existingInvite) await existingInvite.edit(ruleData);
+                              else await guild.autoModerationRules.create(ruleData);
+                } else if (existingInvite) await existingInvite.delete();
 
-              const config = await Config.findOne({ guildId: message.guild.id });
-      if (!config || !config.automod) return;
-
-              let shouldDelete = false;
-      let reason = '';
-
-              if (config.automod.antiInvite && (message.content.includes('discord.gg/') || message.content.includes('discord.com/invite/'))) {
-                        shouldDelete = true;
-                        reason = 'Invite link';
-              }
-
-              if (config.automod.antiLink && !shouldDelete && /https?:\/\/[^\s]+/.test(message.content)) {
-                        shouldDelete = true;
-                        reason = 'Link';
-              }
-
-              if (shouldDelete) {
-                        await message.delete().catch(() => {});
-                        const logCh = client.channels.cache.get(config.logChannelId);
-                        if (logCh) {
-                                      logCh.send(`Deleted message from ${message.author.tag} in ${message.channel.name}. Reason: ${reason}`);
-                        }
-                        return;
-              }
-});
-
-// Logging Events
-const logEvent = async (guild, eventName, description, color, category) => {
-      const config = await Config.findOne({ guildId: guild.id });
-      if (!config || !config.logging?.events?.[eventName]) return;
-
-      const logChannelId = config.logging.channels?.[category] || config.logChannelId;
-      const logCh = client.channels.cache.get(logChannelId);
-      if (!logCh) return;
-
-      const embed = new EmbedBuilder()
-          .setTitle(description.title)
-          .setDescription(description.text)
-          .setColor(color)
-          .setTimestamp();
-
-      logCh.send({ embeds: [embed] });
-};
-
-client.on('channelCreate', ch => logEvent(ch.guild, 'channelCreate', { title: 'Channel Created', text: `Name: ${ch.name}` }, '#3ba55c', 'server'));
-client.on('channelDelete', ch => logEvent(ch.guild, 'channelDelete', { title: 'Channel Deleted', text: `Name: ${ch.name}` }, '#ed4245', 'server'));
-client.on('guildMemberAdd', mem => logEvent(mem.guild, 'memberJoin', { title: 'Member Joined', text: `${mem.user.tag} joined the server` }, '#3ba55c', 'joins'));
-client.on('guildMemberRemove', mem => logEvent(mem.guild, 'memberLeave', { title: 'Member Left', text: `${mem.user.tag} left the server` }, '#ed4245', 'leaves'));
-
-client.login(process.env.DISCORD_TOKEN);
-app.listen(PORT, () => console.log(`Dashboard running on port ${PORT}`));
-
-client.on('roleCreate', role => logEvent(role.guild, 'roleCreate', { title: 'Role Created', text: `Name: ${role.name}` }, '#3ba55c', 'server'));
-client.on('roleDelete', role => logEvent(role.guild, 'roleDelete', { title: 'Role Deleted', text: `Name: ${role.name}` }, '#ed4245', 'server'));
-client.on('messageDelete', msg => {
-      if (msg.author?.bot) return;
-      logEvent(msg.guild, 'messageDelete', { title: 'Message Deleted', text: `Author: ${msg.author?.tag}\nChannel: ${msg.channel.name}\nContent: ${msg.content}` }, '#ed4245', 'messages');
-});
-client.on('messageUpdate', (oldMsg, newMsg) => {
-      if (oldMsg.author?.bot || oldMsg.content === newMsg.content) return;
-      logEvent(oldMsg.guild, 'messageEdit', { title: 'Message Edited', text: `Author: ${oldMsg.author?.tag}\nChannel: ${oldMsg.channel.name}\nOld: ${oldMsg.content}\nNew: ${newMsg.content}` }, '#5865f2', 'messages');
-});
+          const linkRuleName = 'Velyx: Anti-Link';
+                const existingLink = botRules.find(r => r.name === linkRuleName);
+                if (antiLink) {
+                              const ruleData = {
+                                                name: linkRuleName,
+                                                eventType: 1,
+                                                triggerType: 1,
+                                                triggerMetadata: { keywordFilter: ['*http://*', '*https://*'] },
+                                                actions: getActions('External links are forbidden.'),
+                                                enabled: true
+                              };
+                      
