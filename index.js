@@ -20,7 +20,6 @@ const MongoStore = require('connect-mongo');
 const bodyParser = require('body-parser');
 const path = require('path');
 const cors = require('cors');
-const fetch = (...args) => import('node-fetch').then(({default: fetch}) => fetch(...args));
 
 const PORT = process.env.PORT || 3000;
 const CLIENT_ID = process.env.CLIENT_ID;
