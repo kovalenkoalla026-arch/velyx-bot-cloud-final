@@ -353,7 +353,7 @@
             <div class="card">
                 <div class="form-group">
                     <label>Канал логов</label>
-                    <select id="logChannelId"></select>
+                    <select id="logChannelId" onchange="markUnsaved()"></select>
                 </div>
                 <div class="setting-item">
                     <span>📝 Сообщения (Правки/Удаления)</span>
@@ -366,6 +366,9 @@
                 <div class="setting-item">
                     <span>🔊 Голос</span>
                     <label class="switch"><input type="checkbox" id="logVoice" onchange="markUnsaved()"><span class="slider"></span></label>
+                </div>
+                <div style="margin-top: 20px; border-top: 1px solid rgba(255,255,255,0.05); padding-top: 20px;">
+                    <button class="btn btn-primary" onclick="saveSettings()">💾 Сохранить настройки логов</button>
                 </div>
             </div>
         </div>
