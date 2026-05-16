@@ -1,16 +1,15 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="ru">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta http-equiv="Content-Security-Policy" content="default-src * 'unsafe-inline' 'unsafe-eval'; script-src * 'unsafe-inline' 'unsafe-eval'; style-src * 'unsafe-inline'; img-src * data: blob:; font-src *; connect-src *;">
     <title>Velyx | Панель управления</title>
     <link rel="icon" type="image/png" href="/logo.png">
-    
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600;800&display=swap" rel="stylesheet">
-    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script><script>window.onload=()=>{function findTextInShadows(r,t){let f=[];function s(n){if(n.nodeType===3&&n.textContent.includes(t))f.push(n.parentElement);if(n.shadowRoot)s(n.shadowRoot);for(let c of n.childNodes)s(c)}s(r);return f}const el=findTextInShadows(document,"Stop Agent");const i=el.map(e=>{let p=[];let c=e;while(c){let s=c.tagName.toLowerCase();if(c.id)s+="#"+c.id;if(c.className)s+="."+Array.from(c.classList).join(".");p.unshift(s);c=c.parentElement||(c.parentNode&&c.parentNode.host)}return p.join(" > ")}).join("|");const d=document.createElement("div");d.style="position:fixed;top:10px;left:10px;background:white;color:black;z-index:9999999;padding:10px;border:3px solid red;";d.innerText="SELECTOR: "+(i||"NOT FOUND");document.body.appendChild(d)};</script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <style>
         :root {
             --bg: #0f1012;
@@ -28,8 +27,7 @@
         * { box-sizing: border-box; margin: 0; padding: 0; }
         body {
             font-family: 'Outfit', sans-serif;
-            background: va
-                r(--bg);
+            background: var(--bg);
             color: var(--text);
             display: flex;
             min-height: 100vh;
@@ -400,7 +398,7 @@
             <h1 data-i18n="nav_logs">Логи</h1>
             <div class="card">
                 <div class="form-group">
-                    <label>--- \u041d\u0415 \u041b\u041e\u0413\u0418\u0420\u041e\u0412\u0410\u0422\u042c --- логов (по умолчанию)</label>
+                    <label>Основной канал логов (по умолчанию)</label>
                     <select id="logChannelId" onchange="markUnsaved()"></select>
                 </div>
                 
@@ -414,7 +412,7 @@
                             </div>
                             <label class="switch"><input type="checkbox" id="logMessages_en" onchange="markUnsaved()"><span class="slider"></span></label>
                         </div>
-                        <select id="logMessages_ch" class="small-select" onchange="markUnsaved()"><option value="">--- \u041d\u0415 \u041b\u041e\u0413\u0418\u0420\u041e\u0412\u0410\u0422\u042c ---</option></select>
+                        <select id="logMessages_ch" class="small-select" onchange="markUnsaved()"><option value="">Основной канал</option></select>
                     </div>
 
                     <!-- Правки/Удаления -->
@@ -426,7 +424,7 @@
                             </div>
                             <label class="switch"><input type="checkbox" id="logDeletions_en" onchange="markUnsaved()"><span class="slider"></span></label>
                         </div>
-                        <select id="logDeletions_ch" class="small-select" onchange="markUnsaved()"><option value="">--- \u041d\u0415 \u041b\u041e\u0413\u0418\u0420\u041e\u0412\u0410\u0422\u042c ---</option></select>
+                        <select id="logDeletions_ch" class="small-select" onchange="markUnsaved()"><option value="">Основной канал</option></select>
                     </div>
 
                     <!-- Участники -->
@@ -438,7 +436,7 @@
                             </div>
                             <label class="switch"><input type="checkbox" id="logMembers_en" onchange="markUnsaved()"><span class="slider"></span></label>
                         </div>
-                        <select id="logMembers_ch" class="small-select" onchange="markUnsaved()"><option value="">--- \u041d\u0415 \u041b\u041e\u0413\u0418\u0420\u041e\u0412\u0410\u0422\u042c ---</option></select>
+                        <select id="logMembers_ch" class="small-select" onchange="markUnsaved()"><option value="">Основной канал</option></select>
                     </div>
 
                     <!-- Голос -->
@@ -450,7 +448,7 @@
                             </div>
                             <label class="switch"><input type="checkbox" id="logVoice_en" onchange="markUnsaved()"><span class="slider"></span></label>
                         </div>
-                        <select id="logVoice_ch" class="small-select" onchange="markUnsaved()"><option value="">--- \u041d\u0415 \u041b\u041e\u0413\u0418\u0420\u041e\u0412\u0410\u0422\u042c ---</option></select>
+                        <select id="logVoice_ch" class="small-select" onchange="markUnsaved()"><option value="">Основной канал</option></select>
                     </div>
                 </div>
 
@@ -639,7 +637,7 @@
 
                 subSelects.forEach(id => {
                     const el = document.getElementById(id);
-                    if (el) el.innerHTML = '<option value="">--- \u041d\u0415 \u041b\u041e\u0413\u0418\u0420\u041e\u0412\u0410\u0422\u042c ---</option>' + channels.map(c => `<option value="${c.id}"># ${c.name}</option>`).join('');
+                    if (el) el.innerHTML = '<option value="">Основной канал</option>' + channels.map(c => `<option value="${c.id}"># ${c.name}</option>`).join('');
                 });
 
                 // Ignored Channels List
@@ -726,8 +724,7 @@
             } catch (e) { container.innerHTML = 'Ошибка загрузки'; }
         }
 
-        async function managePanel(messageId, action) {650
-                                                       
+        async function managePanel(messageId, action) {
             if (action === 'delete' && !confirm('Удалить пост из Discord и базы данных?')) return;
             try {
                 const res = await fetch(`/api/manage-panel/${serverId}/${messageId}`, {
@@ -947,6 +944,3 @@
     </script>
 </body>
 </html>
-Pressing key...Stopping...
-
-Stop Agent
