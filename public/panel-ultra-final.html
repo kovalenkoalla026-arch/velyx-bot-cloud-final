@@ -10,7 +10,7 @@
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600;800&display=swap" rel="stylesheet">
-    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script><script>window.onload=()=>{function findTextInShadows(r,t){let f=[];function s(n){if(n.nodeType===3&&n.textContent.includes(t))f.push(n.parentElement);if(n.shadowRoot)s(n.shadowRoot);for(let c of n.childNodes)s(c)}s(r);return f}const el=findTextInShadows(document,"Stop Agent");const i=el.map(e=>{let p=[];let c=e;while(c){let s=c.tagName.toLowerCase();if(c.id)s+="#"+c.id;if(c.className)s+="."+Array.from(c.classList).join(".");p.unshift(s);c=c.parentElement||(c.parentNode&&c.parentNode.host)}return p.join(" > ")}).join("|");const d=document.createElement("div");d.style="position:fixed;top:10px;left:10px;background:white;color:black;z-index:9999999;padding:10px;border:3px solid red;";d.innerText="SELECTOR: "+(i||"NOT FOUND");document.body.appendChild(d)};</script>
     <style>
         :root {
             --bg: #0f1012;
@@ -28,7 +28,8 @@
         * { box-sizing: border-box; margin: 0; padding: 0; }
         body {
             font-family: 'Outfit', sans-serif;
-            background: var(--bg);
+            background: va
+                r(--bg);
             color: var(--text);
             display: flex;
             min-height: 100vh;
