@@ -965,19 +965,15 @@ async function updateStats(guildId, count = 1) {
     return stats;
 }
 
-// Слушатель сообщений (Единый для статистики и логов)
+// Слушатель сообщений (Единый для статистики, логов и Авто-мода)
 client.on('messageCreate', async (message) => {
-    // 1. Отладка (видим всё)
-    console.log(`[DEBUG] Message from ${message.author?.tag} in server: ${message.guild?.name || 'DM'} (ID: ${message.guild?.id})`);
-    
     if (message.author?.bot || !message.guild) return;
 
-    // 2. Статистика (считаем)
-    const statsGlobal = await updateStats('global');
-    const stats = await updateStats(message.guild.id);
-    console.log(`[Stats] New counter for ${message.guild.name}: ${stats.messagesToday}`);
+    // 1. Статистика (считаем)
+    await updateStats('global');
+    await updateStats(message.guild.id);
 
-    // 3. Логирование (если включено)
+    // 2. Логирование (если включено)
     const config = await getConfig(message.guild.id);
     if (config && config.logChannelId && message.channelId !== config.logChannelId && config.logging?.messages) {
         const embed = new EmbedBuilder().setTitle('💬 Новое сообщение').setColor('#1e90ff')
@@ -987,6 +983,56 @@ client.on('messageCreate', async (message) => {
                 { name: 'Содержимое', value: message.content || '*[Без текста]*' }
             ).setTimestamp();
         await sendLog(message.guild.id, embed, 'messages');
+    }
+
+    // 3. Авто-модерация
+    if (!config.automod) return;
+
+    // Пропуск админов
+    if (message.member.permissions.has('Administrator') || message.member.permissions.has('ManageMessages')) return;
+
+    const { antiInvite, antiLink, antiSpam, punishment, muteDuration, sendDm, dmMessage } = config.automod;
+    
+    let violated = false;
+    let reason = '';
+
+    if (antiInvite) {
+        const inviteRegex = /(discord\.(gg|io|me|li)|discordapp\.com\/invite)\/.+/i;
+        if (inviteRegex.test(message.content)) { violated = true; reason = 'Отправка приглашений'; }
+    }
+    if (!violated && antiLink) {
+        const urlRegex = /https?:\/\/[^\s]+/i;
+        if (urlRegex.test(message.content)) { violated = true; reason = 'Отправка ссылок'; }
+    }
+    if (!violated && antiSpam) {
+        const now = Date.now();
+        const userData = spamMap.get(message.author.id) || [];
+        const recentMessages = userData.filter(timestamp => now - timestamp < 5000);
+        recentMessages.push(now);
+        spamMap.set(message.author.id, recentMessages);
+        if (recentMessages.length > 5) { violated = true; reason = 'Спам'; }
+    }
+
+    if (violated) {
+        try {
+            await message.delete().catch(() => {});
+            if (sendDm) {
+                const finalMsg = (dmMessage || 'Вы были наказаны на сервере {guild}. Причина: {reason}')
+                    .replace(/{guild}/g, message.guild.name)
+                    .replace(/{reason}/g, reason);
+                await message.author.send(finalMsg).catch(() => {});
+            }
+            if (punishment === 'mute') await message.member.timeout(muteDuration * 1000, reason).catch(() => {});
+            else if (punishment === 'ban') await message.member.ban({ reason }).catch(() => {});
+
+            const logEmbed = new EmbedBuilder().setTitle('🛡️ Авто-модерация').setColor('#ff4757')
+                .addFields(
+                    { name: 'Нарушитель', value: `<@${message.author.id}>` },
+                    { name: 'Причина', value: reason },
+                    { name: 'Наказание', value: punishment }
+                ).setTimestamp();
+            await sendLog(message.guild.id, logEmbed, 'messages');
+        } catch (e) {}
     }
 });
 
@@ -1205,12 +1251,24 @@ async function sendLog(guildId, embed, type) {
 
 client.on('messageDelete', async message => {
   if (message.author?.bot || !message.guild) return;
+
+  // Ghost Ping detection
+  let ghostPing = false;
+  if (message.mentions.members.size > 0 || message.mentions.roles.size > 0 || message.mentions.everyone) {
+      ghostPing = true;
+      trackForensics(message.author.id, 'ghostPing', true);
+  }
+
   const embed = new EmbedBuilder().setTitle('🗑 Сообщение удалено').setColor('#ff4757')
     .addFields(
       { name: 'Автор', value: `${message.author?.tag || 'Неизвестно'} (<@${message.author?.id || '?'}>)`, inline: true },
       { name: 'Канал', value: `<#${message.channelId}>`, inline: true },
       { name: 'Содержимое', value: message.content || '*[Без текста]*' }
-    ).setTimestamp();
+    );
+  
+  if (ghostPing) embed.addFields({ name: 'Призрачное упоминание', value: '🛑 ДА' });
+  
+  embed.setTimestamp();
   await sendLog(message.guild.id, embed, 'deletions');
 });
 
@@ -1260,23 +1318,6 @@ client.on('userUpdate', (oldUser, newUser) => {
     }
 });
 
-client.on('messageDelete', async message => {
-  if (message.author?.bot || !message.guild) return;
-  
-  // Ghost Ping detection
-  if (message.mentions.members.size > 0 || message.mentions.roles.size > 0 || message.mentions.everyone) {
-      trackForensics(message.author.id, 'ghostPing', true);
-  }
-
-  const embed = new EmbedBuilder().setTitle('🗑 Сообщение удалено').setColor('#ff4757')
-    .addFields(
-      { name: 'Автор', value: `${message.author?.tag || 'Неизвестно'} (<@${message.author?.id || '?'}>)`, inline: true },
-      { name: 'Канал', value: `<#${message.channelId}>`, inline: true },
-      { name: 'Содержимое', value: message.content || '*[Без текста]*' },
-      { name: 'Призрачное упоминание', value: (message.mentions.members.size > 0) ? '🛑 ДА' : 'НЕТ' }
-    ).setTimestamp();
-  await sendLog(message.guild.id, embed, 'deletions');
-});
 
 client.on('guildMemberRemove', async member => {
   const embed = new EmbedBuilder().setTitle('📤 Участник покинул сервер').setColor('#ff4757')
@@ -1302,91 +1343,6 @@ client.on('voiceStateUpdate', async (oldState, newState) => {
 
 const spamMap = new Map();
 
-client.on('messageCreate', async message => {
-  if (!message.guild || message.author.bot) return;
-  
-  const config = await getConfig(message.guild.id);
-  if (!config.automod) return;
-
-  // Check permissions
-  const isAdmin = message.member.permissions.has('Administrator');
-  const isMod = message.member.permissions.has('ManageMessages');
-  if (isAdmin || isMod) return;
-
-  const { antiInvite, antiLink, antiSpam, punishment, muteDuration, sendDm, dmMessage } = config.automod;
-  console.log(`[AutoMod] Settings: invite=${antiInvite}, link=${antiLink}, spam=${antiSpam}, punishment=${punishment}`);
-  
-  let violated = false;
-  let reason = '';
-
-  // Anti-Invite
-  if (antiInvite) {
-    const inviteRegex = /(discord\.(gg|io|me|li)|discordapp\.com\/invite)\/.+/i;
-    if (inviteRegex.test(message.content)) {
-      violated = true;
-      reason = 'Отправка приглашений на другие серверы';
-    }
-  }
-
-  // Anti-Link (all links)
-  if (!violated && antiLink) {
-    const urlRegex = /https?:\/\/[^\s]+/i;
-    if (urlRegex.test(message.content)) {
-      violated = true;
-      reason = 'Отправка ссылок запрещена';
-    }
-  }
-
-  // Anti-Spam (basic: 5 messages in 5 seconds)
-  if (!violated && antiSpam) {
-    const now = Date.now();
-    const userData = spamMap.get(message.author.id) || [];
-    const recentMessages = userData.filter(timestamp => now - timestamp < 5000);
-    recentMessages.push(now);
-    spamMap.set(message.author.id, recentMessages);
-
-    if (recentMessages.length > 5) {
-      violated = true;
-      reason = 'Слишком частая отправка сообщений (Спам)';
-    }
-  }
-
-  if (violated) {
-    console.log(`[AutoMod] VIOLATION DETECTED from ${message.author.tag}: ${reason}`);
-    try {
-      await message.delete().catch(e => console.log(`[AutoMod] Delete failed: ${e.message}`));
-      
-      if (sendDm) {
-        console.log(`[AutoMod] Sending DM to ${message.author.tag}`);
-        const finalMsg = (dmMessage || 'Вы были наказаны на сервере {guild}. Причина: {reason}')
-          .replace(/{guild}/g, message.guild.name)
-          .replace(/{reason}/g, reason);
-        await message.author.send(finalMsg).catch(() => {});
-      }
-
-      console.log(`[AutoMod] Executing punishment: ${punishment}`);
-      if (punishment === 'mute') {
-        await message.member.timeout(muteDuration * 1000, reason).catch(e => console.log(`[AutoMod] Mute failed: ${e.message}`));
-      } else if (punishment === 'ban') {
-        await message.member.ban({ reason }).catch(e => console.log(`[AutoMod] Ban failed: ${e.message}`));
-      }
-
-      // Log to log channel
-      const logEmbed = new EmbedBuilder()
-        .setTitle('🛡️ Авто-модерация')
-        .setColor('#ff4757')
-        .addFields(
-          { name: 'Нарушитель', value: `<@${message.author.id}> (${message.author.tag})` },
-          { name: 'Причина', value: reason },
-          { name: 'Наказание', value: punishment === 'mute' ? `Мут (${muteDuration}с)` : punishment === 'ban' ? 'Бан' : 'Удаление сообщения' }
-        )
-        .setTimestamp();
-      await sendLog(message.guild.id, logEmbed, 'messages');
-    } catch (e) {
-      console.error('AutoMod Execution Error:', e);
-    }
-  }
-});
 
 client.on('interactionCreate', async interaction => {
   if (!interaction.guild) return;
