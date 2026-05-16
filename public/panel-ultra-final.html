@@ -180,6 +180,37 @@
 
         .question-row { display: flex; gap: 10px; margin-bottom: 10px; }
         
+        .log-category-card {
+            background: rgba(255,255,255,0.03);
+            padding: 15px;
+            border-radius: 12px;
+            border: 1px solid rgba(255,255,255,0.05);
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+        .small-select {
+            width: 100%;
+            background: rgba(0,0,0,0.2) !important;
+            border: 1px solid rgba(255,255,255,0.1) !important;
+            padding: 6px 10px !important;
+            font-size: 12px !important;
+            height: auto !important;
+        }
+        .ignored-channel-item {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-size: 12px;
+            color: var(--text-dim);
+            cursor: pointer;
+            padding: 5px;
+            border-radius: 6px;
+            transition: background 0.2s;
+        }
+        .ignored-channel-item:hover { background: rgba(255,255,255,0.05); }
+        .ignored-channel-item input { cursor: pointer; margin: 0; }
+
         /* Preview Embed */
         .embed-preview { background: #2b2d31; border-left: 4px solid #5865f2; border-radius: 4px; padding: 12px 16px; max-width: 500px; }
         .embed-title { color: #fff; font-weight: 600; font-size: 16px; margin-bottom: 8px; }
@@ -352,21 +383,55 @@
             <h1 data-i18n="nav_logs">Логи</h1>
             <div class="card">
                 <div class="form-group">
-                    <label>Канал логов</label>
+                    <label>Основной канал логов (по умолчанию)</label>
                     <select id="logChannelId" onchange="markUnsaved()"></select>
                 </div>
-                <div class="setting-item">
-                    <span>📝 Сообщения (Правки/Удаления)</span>
-                    <label class="switch"><input type="checkbox" id="logMessages" onchange="markUnsaved()"><span class="slider"></span></label>
+                
+                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px; margin-top: 20px;">
+                    <!-- Сообщения -->
+                    <div class="log-category-card">
+                        <div class="setting-item">
+                            <span>💬 Сообщения</span>
+                            <label class="switch"><input type="checkbox" id="logMessages_en" onchange="markUnsaved()"><span class="slider"></span></label>
+                        </div>
+                        <select id="logMessages_ch" class="small-select" onchange="markUnsaved()"><option value="">Основной канал</option></select>
+                    </div>
+
+                    <!-- Правки/Удаления -->
+                    <div class="log-category-card">
+                        <div class="setting-item">
+                            <span>🗑️ Удаления/Правки</span>
+                            <label class="switch"><input type="checkbox" id="logDeletions_en" onchange="markUnsaved()"><span class="slider"></span></label>
+                        </div>
+                        <select id="logDeletions_ch" class="small-select" onchange="markUnsaved()"><option value="">Основной канал</option></select>
+                    </div>
+
+                    <!-- Участники -->
+                    <div class="log-category-card">
+                        <div class="setting-item">
+                            <span>👥 Вход/Выход</span>
+                            <label class="switch"><input type="checkbox" id="logMembers_en" onchange="markUnsaved()"><span class="slider"></span></label>
+                        </div>
+                        <select id="logMembers_ch" class="small-select" onchange="markUnsaved()"><option value="">Основной канал</option></select>
+                    </div>
+
+                    <!-- Голос -->
+                    <div class="log-category-card">
+                        <div class="setting-item">
+                            <span>🔊 Голосовые</span>
+                            <label class="switch"><input type="checkbox" id="logVoice_en" onchange="markUnsaved()"><span class="slider"></span></label>
+                        </div>
+                        <select id="logVoice_ch" class="small-select" onchange="markUnsaved()"><option value="">Основной канал</option></select>
+                    </div>
                 </div>
-                <div class="setting-item">
-                    <span>👥 Участники (Вход/Выход)</span>
-                    <label class="switch"><input type="checkbox" id="logMembers" onchange="markUnsaved()"><span class="slider"></span></label>
+
+                <div class="form-group" style="margin-top: 30px; border-top: 1px solid rgba(255,255,255,0.05); padding-top: 20px;">
+                    <label>🚫 Игнорируемые каналы</label>
+                    <div id="ignoredChannelsList" style="display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 10px; max-height: 200px; overflow-y: auto; padding: 10px; background: rgba(0,0,0,0.2); border-radius: 8px; margin-top: 10px;">
+                        <!-- Checkboxes will be here -->
+                    </div>
                 </div>
-                <div class="setting-item">
-                    <span>🔊 Голос</span>
-                    <label class="switch"><input type="checkbox" id="logVoice" onchange="markUnsaved()"><span class="slider"></span></label>
-                </div>
+
                 <div style="margin-top: 20px; border-top: 1px solid rgba(255,255,255,0.05); padding-top: 20px;">
                     <button class="btn btn-primary" onclick="saveSettings()">💾 Сохранить настройки логов</button>
                 </div>
@@ -526,11 +591,30 @@
                 }
                 
                 // Populate channels
-                const selects = ['rulesChannelId', 'logChannelId', 'recChannelId', 'recAdminChannelId'];
-                selects.forEach(id => {
+                const mainSelects = ['rulesChannelId', 'logChannelId', 'recChannelId', 'recAdminChannelId'];
+                const subSelects = ['logMessages_ch', 'logDeletions_ch', 'logMembers_ch', 'logVoice_ch'];
+                const channels = data.channels || [];
+
+                mainSelects.forEach(id => {
                     const el = document.getElementById(id);
-                    if (el) el.innerHTML = (data.channels || []).map(c => `<option value="${c.id}"># ${c.name}</option>`).join('');
+                    if (el) el.innerHTML = channels.map(c => `<option value="${c.id}"># ${c.name}</option>`).join('');
                 });
+
+                subSelects.forEach(id => {
+                    const el = document.getElementById(id);
+                    if (el) el.innerHTML = '<option value="">Основной канал</option>' + channels.map(c => `<option value="${c.id}"># ${c.name}</option>`).join('');
+                });
+
+                // Ignored Channels List
+                const ignoredList = document.getElementById('ignoredChannelsList');
+                if (ignoredList) {
+                    ignoredList.innerHTML = channels.map(c => `
+                        <label class="ignored-channel-item">
+                            <input type="checkbox" value="${c.id}" ${config.logging?.ignoredChannels?.includes(c.id) ? 'checked' : ''} onchange="markUnsaved()">
+                            <span># ${c.name}</span>
+                        </label>
+                    `).join('');
+                }
 
                 // Set values
                 document.getElementById('modAntiInvite').checked = config.automod?.antiInvite;
@@ -539,9 +623,22 @@
                 document.getElementById('modPunishment').value = config.automod?.punishment || 'none';
                 
                 document.getElementById('logChannelId').value = config.logChannelId || '';
-                document.getElementById('logMessages').checked = config.logging?.messages;
-                document.getElementById('logMembers').checked = config.logging?.joins;
-                document.getElementById('logVoice').checked = config.logging?.voice;
+
+                // Logging details
+                const logMap = {
+                    'messages': 'logMessages',
+                    'deletions': 'logDeletions',
+                    'joins': 'logMembers',
+                    'voice': 'logVoice'
+                };
+
+                for (let key in logMap) {
+                    const settings = config.logging?.[key];
+                    const en = document.getElementById(`${logMap[key]}_en`);
+                    const ch = document.getElementById(`${logMap[key]}_ch`);
+                    if (en) en.checked = typeof settings === 'object' ? settings.enabled : !!settings;
+                    if (ch) ch.value = typeof settings === 'object' ? (settings.channelId || '') : '';
+                }
 
                 document.getElementById('recOpen').checked = config.recruitment?.open;
                 document.getElementById('recTitle').value = config.recruitment?.title || '';
@@ -605,10 +702,13 @@
                 punishment: document.getElementById('modPunishment').value
             };
             config.logging = {
-                messages: document.getElementById('logMessages').checked,
-                joins: document.getElementById('logMembers').checked,
-                leaves: document.getElementById('logMembers').checked,
-                voice: document.getElementById('logVoice').checked
+                messages: { enabled: document.getElementById('logMessages_en').checked, channelId: document.getElementById('logMessages_ch').value },
+                deletions: { enabled: document.getElementById('logDeletions_en').checked, channelId: document.getElementById('logDeletions_ch').value },
+                edits: { enabled: document.getElementById('logDeletions_en').checked, channelId: document.getElementById('logDeletions_ch').value },
+                joins: { enabled: document.getElementById('logMembers_en').checked, channelId: document.getElementById('logMembers_ch').value },
+                leaves: { enabled: document.getElementById('logMembers_en').checked, channelId: document.getElementById('logMembers_ch').value },
+                voice: { enabled: document.getElementById('logVoice_en').checked, channelId: document.getElementById('logVoice_ch').value },
+                ignoredChannels: Array.from(document.querySelectorAll('#ignoredChannelsList input:checked')).map(i => i.value)
             };
             config.logChannelId = document.getElementById('logChannelId').value;
             config.recruitment.open = document.getElementById('recOpen').checked;
