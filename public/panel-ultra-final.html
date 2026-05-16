@@ -596,7 +596,13 @@
             document.getElementById('saveBar').classList.add('visible');
         }
 
-        function resetForm() { window.location.reload(); }
+        function resetForm() { 
+                        loadData().then(() => {
+                                            hasChanges = false;
+                                            document.getElementById('saveBar').classList.remove('visible');
+                                                            showToast('Changes reset');
+                        });
+        }
 
         // Navigation
         document.querySelectorAll('.nav-item').forEach(item => {
