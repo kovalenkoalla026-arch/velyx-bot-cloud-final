@@ -500,6 +500,12 @@
                         <div id="questionsContainer"></div>
                         <button class="btn btn-ghost" onclick="addQuestion()" style="width: 100%;">➕ Добавить вопрос</button>
                     </div>
+                    <div class="card" style="margin-top: 20px;">
+                        <div class="card-header">📋 Активные посты с заявками</div>
+                        <div id="activePanelsList" style="display: flex; flex-direction: column; gap: 10px; margin-top: 15px;">
+                            <div style="color: var(--text-dim); font-size: 13px; text-align: center; padding: 20px;">Загрузка...</div>
+                        </div>
+                    </div>
                 </div>
                 <div>
                     <div class="card" style="position: sticky; top: 50px;">
@@ -679,7 +685,58 @@
                 renderRuleBlocks();
                 updatePreview();
                 loadAnalytics();
+                renderActivePanels();
             } catch(e) { console.error(e); }
+        }
+
+        async function renderActivePanels() {
+            const container = document.getElementById('activePanelsList');
+            try {
+                const res = await fetch(`/api/recruitment-panels/${serverId}`);
+                const panels = await res.json();
+                
+                if (panels.length === 0) {
+                    container.innerHTML = '<div style="color: var(--text-dim); font-size: 13px; text-align: center; padding: 20px;">Нет активных постов</div>';
+                    return;
+                }
+
+                container.innerHTML = panels.map(p => `
+                    <div class="card" style="background: rgba(255,255,255,0.02); margin: 0; padding: 12px; border: 1px solid rgba(255,255,255,0.05);">
+                        <div style="display: flex; justify-content: space-between; align-items: center;">
+                            <div>
+                                <div style="font-weight: 600; font-size: 14px;">${p.title}</div>
+                                <div style="font-size: 11px; color: var(--text-dim);">ID: ${p.messageId} | ${new Date(p.createdAt).toLocaleDateString()}</div>
+                                <div style="font-size: 11px; margin-top: 4px; color: ${p.status === 'open' ? '#2ed573' : '#ff4757'}">
+                                    ${p.status === 'open' ? '● ОТКРЫТ' : '● ЗАКРЫТ'}
+                                </div>
+                            </div>
+                            <div style="display: flex; gap: 8px;">
+                                <button class="btn btn-ghost" style="padding: 5px 10px; font-size: 11px;" onclick="managePanel('${p.messageId}', '${p.status === 'open' ? 'close' : 'open'}')">
+                                    ${p.status === 'open' ? '🔒 Закрыть' : '🔓 Открыть'}
+                                </button>
+                                <button class="btn btn-danger" style="padding: 5px 10px; font-size: 11px;" onclick="managePanel('${p.messageId}', 'delete')">
+                                    🗑️ Удалить
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                `).join('');
+            } catch (e) { container.innerHTML = 'Ошибка загрузки'; }
+        }
+
+        async function managePanel(messageId, action) {
+            if (action === 'delete' && !confirm('Удалить пост из Discord и базы данных?')) return;
+            try {
+                const res = await fetch(`/api/manage-panel/${serverId}/${messageId}`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ action })
+                });
+                if (res.ok) {
+                    showToast('Успешно!');
+                    renderActivePanels();
+                }
+            } catch (e) { alert('Ошибка'); }
         }
 
         function renderQuestions() {
@@ -873,7 +930,10 @@
                         adminChannelId: adminId 
                     })
                 });
-                if (res.ok) showToast('Панель отправлена!');
+                if (res.ok) {
+                    showToast('Панель отправлена!');
+                    renderActivePanels();
+                }
                 else alert('Ошибка при отправке');
             } catch(e) { alert('Ошибка сети'); }
             btn.innerText = '🚀 Отправить панель в канал';
