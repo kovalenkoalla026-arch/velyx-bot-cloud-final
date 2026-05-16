@@ -792,80 +792,41 @@ app.post('/api/structure/:guildId', checkAuth, async (req, res) => {
 app.post('/api/send-panel/:guildId', checkAuth, async (req, res) => {
   const guildId = req.params.guildId;
   const config = await getConfig(guildId);
-  try {
     const channel = await client.channels.fetch(req.body.channelId);
     if (!channel || channel.guildId !== guildId) return res.status(404).json({ error: 'Канал не найден или не принадлежит серверу' });
 
-    // Ensure admin channel is updated if provided
-    if (req.body.adminChannelId) {
-        config.adminChannelId = req.body.adminChannelId;
-    }
-
-    const panelId = Date.now().toString();
+    const embed = new EmbedBuilder()
+        .setTitle(config.recruitment.title || '📩 Подача заявок')
+        .setDescription(config.recruitment.description || 'Нажмите на кнопку ниже, чтобы начать заполнение анкеты.')
+        .setColor(config.recruitment.color ? parseInt(config.recruitment.color.replace('#', ''), 16) : 0x2b2d31);
     
-    // Save snapshot of this panel's questions
-    config.activePanels = config.activePanels || new Map();
-    if (config.activePanels.set) {
-        config.activePanels.set(panelId, { title: config.recruitment.title, questions: [...config.recruitment.questions] });
-    } else {
-        config.activePanels[panelId] = { title: config.recruitment.title, questions: [...config.recruitment.questions] };
-    }
-    await saveConfig(guildId, config);
+    if (config.recruitment.imageUrl) embed.setImage(config.recruitment.imageUrl);
 
-    const isCustomColor = config.recruitment.color && config.recruitment.color !== '#2b2d31';
-    const hasImage = !!config.recruitment.imageUrl;
+    const row = new ActionRowBuilder().addComponents(
+        new ButtonBuilder()
+            .setCustomId('start_app')
+            .setLabel('📩 Подать заявку')
+            .setStyle(ButtonStyle.Primary)
+    );
 
-    let payload;
-    if (isCustomColor || hasImage) {
-        payload = {
-            embeds: [{
-                title: config.recruitment.title,
-                description: config.recruitment.description,
-                color: config.recruitment.color ? parseInt(config.recruitment.color.replace('#', ''), 16) : 0x2b2d31,
-                image: hasImage ? { url: config.recruitment.imageUrl } : null
-            }],
-            components: [
-                {
-                    type: 1,
-                    components: [
-                        { type: 2, style: 1, label: "Подать заявку", custom_id: `apply_modal_${panelId}`, emoji: { name: "📩" }, disabled: !config.recruitment.open }
-                    ]
-                }
-            ]
-        };
-    } else {
-        payload = {
-            flags: 32768, // V2 Components (Идеальный блок без полосок)
-            components: [
-                {
-                    type: 17,
-                    components: [
-                        { type: 10, content: `## ${config.recruitment.title}\n${config.recruitment.description}` },
-                        {
-                            type: 1,
-                            components: [
-                                { type: 2, style: 1, label: "Подать заявку", custom_id: `apply_modal_${panelId}`, emoji: { name: "📩" }, disabled: !config.recruitment.open }
-                            ]
-                        }
-                    ]
-                }
-            ]
-        };
-    }
-    
-    const response = await fetch(`https://discord.com/api/v10/channels/${req.body.channelId}/messages`, {
-        method: 'POST',
-        headers: { 'Authorization': `Bot ${process.env.DISCORD_TOKEN}`, 'Content-Type': 'application/json' },
-        body: JSON.stringify(payload)
+    const message = await channel.send({ 
+        embeds: [embed],
+        components: [row]
     });
 
-    if (response.ok) {
-        res.json({ success: true });
-    } else {
-        const errorData = await response.json();
-        res.status(500).json({ error: 'Ошибка Discord API: ' + (errorData.message || '') });
-    }
+    // Track panel in DB for management
+    const newPanel = new RecruitmentPanel({
+        guildId: guildId,
+        channelId: req.body.channelId,
+        messageId: message.id,
+        title: config.recruitment.title || '📩 Подача заявок',
+        status: 'open'
+    });
+    await newPanel.save();
+
+    res.json({ success: true, messageId: message.id });
   } catch (err) {
+    console.error('Send Panel Error:', err);
     res.status(500).json({ error: err.message });
   }
 });
