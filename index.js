@@ -508,32 +508,59 @@ app.get('/api/guild-structure/:guildId', checkAuth, async (req, res) => {
 app.post('/api/apply-structure/:guildId', checkAuth, async (req, res) => {
     try {
         const guild = await client.guilds.fetch(req.params.guildId);
-        const { structure } = req.body; // Array of categories with channels
+        const { structure, deleteOthers } = req.body; 
+
+        const usedChannelIds = new Set();
 
         for (const catData of structure) {
             let category;
             if (catData.id && !catData.id.startsWith('temp-')) {
-                category = await guild.channels.fetch(catData.id);
-                if (category) await category.setName(catData.name);
-            } else {
+                category = await guild.channels.fetch(catData.id).catch(() => null);
+                if (category) {
+                    await category.setName(catData.name);
+                    usedChannelIds.add(category.id);
+                }
+            }
+            
+            if (!category) {
                 category = await guild.channels.create({ name: catData.name, type: 4 });
+                usedChannelIds.add(category.id);
             }
 
             for (const chanData of catData.channels) {
+                let channel;
                 if (chanData.id && !chanData.id.startsWith('temp-')) {
-                    const channel = await guild.channels.fetch(chanData.id);
-                    if (channel) await channel.edit({ name: chanData.name, parent: category.id });
-                } else {
-                    await guild.channels.create({
+                    channel = await guild.channels.fetch(chanData.id).catch(() => null);
+                    if (channel) {
+                        await channel.edit({ name: chanData.name, parent: category.id });
+                        usedChannelIds.add(channel.id);
+                    }
+                }
+                
+                if (!channel) {
+                    const newChan = await guild.channels.create({
                         name: chanData.name,
                         type: chanData.type === 'voice' ? 2 : 0,
                         parent: category.id
                     });
+                    usedChannelIds.add(newChan.id);
                 }
             }
         }
+
+        if (deleteOthers) {
+            const allChannels = await guild.channels.fetch();
+            for (const [id, channel] of allChannels) {
+                // Don't delete system channels or the ones we just created/updated
+                if (!usedChannelIds.has(id)) {
+                    await channel.delete().catch(e => console.error(`Failed to delete channel ${id}:`, e.message));
+                }
+            }
+        }
+
         res.json({ success: true });
     } catch (err) {
+        console.error('Apply Structure Error:', err);
         res.status(500).json({ error: err.message });
     }
 });
