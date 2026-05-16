@@ -1,11 +1,12 @@
 <!DOCTYPE html>
-<html lang="ru">
+<html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta http-equiv="Content-Security-Policy" content="default-src * 'unsafe-inline' 'unsafe-eval'; script-src * 'unsafe-inline' 'unsafe-eval'; style-src * 'unsafe-inline'; img-src * data: blob:; font-src *; connect-src *;">
     <title>Velyx | Панель управления</title>
-    <link rel="icon" type="image/png" href="/logo.png">
+    <link rel="icon" type="image/png" href="/logo.png">656
+    
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600;800&display=swap" rel="stylesheet">
@@ -398,7 +399,7 @@
             <h1 data-i18n="nav_logs">Логи</h1>
             <div class="card">
                 <div class="form-group">
-                    <label>Основной канал логов (по умолчанию)</label>
+                    <label>--- \u041d\u0415 \u041b\u041e\u0413\u0418\u0420\u041e\u0412\u0410\u0422\u042c --- логов (по умолчанию)</label>
                     <select id="logChannelId" onchange="markUnsaved()"></select>
                 </div>
                 
@@ -412,7 +413,7 @@
                             </div>
                             <label class="switch"><input type="checkbox" id="logMessages_en" onchange="markUnsaved()"><span class="slider"></span></label>
                         </div>
-                        <select id="logMessages_ch" class="small-select" onchange="markUnsaved()"><option value="">Основной канал</option></select>
+                        <select id="logMessages_ch" class="small-select" onchange="markUnsaved()"><option value="">--- \u041d\u0415 \u041b\u041e\u0413\u0418\u0420\u041e\u0412\u0410\u0422\u042c ---</option></select>
                     </div>
 
                     <!-- Правки/Удаления -->
@@ -424,7 +425,7 @@
                             </div>
                             <label class="switch"><input type="checkbox" id="logDeletions_en" onchange="markUnsaved()"><span class="slider"></span></label>
                         </div>
-                        <select id="logDeletions_ch" class="small-select" onchange="markUnsaved()"><option value="">Основной канал</option></select>
+                        <select id="logDeletions_ch" class="small-select" onchange="markUnsaved()"><option value="">--- \u041d\u0415 \u041b\u041e\u0413\u0418\u0420\u041e\u0412\u0410\u0422\u042c ---</option></select>
                     </div>
 
                     <!-- Участники -->
@@ -436,7 +437,7 @@
                             </div>
                             <label class="switch"><input type="checkbox" id="logMembers_en" onchange="markUnsaved()"><span class="slider"></span></label>
                         </div>
-                        <select id="logMembers_ch" class="small-select" onchange="markUnsaved()"><option value="">Основной канал</option></select>
+                        <select id="logMembers_ch" class="small-select" onchange="markUnsaved()"><option value="">--- \u041d\u0415 \u041b\u041e\u0413\u0418\u0420\u041e\u0412\u0410\u0422\u042c ---</option></select>
                     </div>
 
                     <!-- Голос -->
@@ -448,7 +449,7 @@
                             </div>
                             <label class="switch"><input type="checkbox" id="logVoice_en" onchange="markUnsaved()"><span class="slider"></span></label>
                         </div>
-                        <select id="logVoice_ch" class="small-select" onchange="markUnsaved()"><option value="">Основной канал</option></select>
+                        <select id="logVoice_ch" class="small-select" onchange="markUnsaved()"><option value="">--- \u041d\u0415 \u041b\u041e\u0413\u0418\u0420\u041e\u0412\u0410\u0422\u042c ---</option></select>
                     </div>
                 </div>
 
@@ -637,7 +638,7 @@
 
                 subSelects.forEach(id => {
                     const el = document.getElementById(id);
-                    if (el) el.innerHTML = '<option value="">Основной канал</option>' + channels.map(c => `<option value="${c.id}"># ${c.name}</option>`).join('');
+                    if (el) el.innerHTML = '<option value="">--- \u041d\u0415 \u041b\u041e\u0413\u0418\u0420\u041e\u0412\u0410\u0422\u042c ---</option>' + channels.map(c => `<option value="${c.id}"># ${c.name}</option>`).join('');
                 });
 
                 // Ignored Channels List
@@ -724,7 +725,8 @@
             } catch (e) { container.innerHTML = 'Ошибка загрузки'; }
         }
 
-        async function managePanel(messageId, action) {
+        async function managePanel(messageId, action) {650
+                                                       
             if (action === 'delete' && !confirm('Удалить пост из Discord и базы данных?')) return;
             try {
                 const res = await fetch(`/api/manage-panel/${serverId}/${messageId}`, {
