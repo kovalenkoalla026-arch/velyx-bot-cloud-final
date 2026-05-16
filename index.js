@@ -37,12 +37,13 @@ const guildConfigSchema = new mongoose.Schema({
     logChannelId: { type: String, default: '' },
     adminChannelId: { type: String, default: '' },
     logging: {
-        messages: { type: Boolean, default: false },
-        deletions: { type: Boolean, default: false },
-        edits: { type: Boolean, default: false },
-        joins: { type: Boolean, default: false },
-        leaves: { type: Boolean, default: false },
-        voice: { type: Boolean, default: false }
+        messages: { enabled: { type: Boolean, default: false }, channelId: { type: String, default: '' } },
+        deletions: { enabled: { type: Boolean, default: false }, channelId: { type: String, default: '' } },
+        edits: { enabled: { type: Boolean, default: false }, channelId: { type: String, default: '' } },
+        joins: { enabled: { type: Boolean, default: false }, channelId: { type: String, default: '' } },
+        leaves: { enabled: { type: Boolean, default: false }, channelId: { type: String, default: '' } },
+        voice: { enabled: { type: Boolean, default: false }, channelId: { type: String, default: '' } },
+        ignoredChannels: { type: [String], default: [] }
     },
     recruitment: {
         open: { type: Boolean, default: false },
@@ -975,14 +976,14 @@ client.on('messageCreate', async (message) => {
 
     // 2. Логирование (если включено)
     const config = await getConfig(message.guild.id);
-    if (config && config.logChannelId && message.channelId !== config.logChannelId && config.logging?.messages) {
+    if (config && config.logging?.messages && message.channelId !== config.logChannelId) {
         const embed = new EmbedBuilder().setTitle('💬 Новое сообщение').setColor('#1e90ff')
             .addFields(
                 { name: 'Автор', value: `${message.author.tag} (<@${message.author.id}>)`, inline: true },
                 { name: 'Канал', value: `<#${message.channelId}>`, inline: true },
                 { name: 'Содержимое', value: message.content || '*[Без текста]*' }
             ).setTimestamp();
-        await sendLog(message.guild.id, embed, 'messages');
+        await sendLog(message.guild.id, embed, 'messages', message.channelId);
     }
 
     // 3. Авто-модерация
@@ -1238,12 +1239,26 @@ app.post('/api/ads', async (req, res) => {
 
 // --- ЛОГИРОВАНИЕ ---
 
-async function sendLog(guildId, embed, type) {
+async function sendLog(guildId, embed, type, sourceChannelId = null) {
   const config = await getConfig(guildId);
-  if (!config || !config.logging[type] || !config.logChannelId) return;
+  if (!config || !config.logging) return;
+
+  // Проверка игнорируемых каналов
+  if (sourceChannelId && config.logging.ignoredChannels?.includes(sourceChannelId)) return;
+
+  const logSettings = config.logging[type];
+  if (!logSettings) return;
+
+  // Если тип - объект (новый формат), проверяем enabled и берем специфичный канал
+  const isEnabled = typeof logSettings === 'boolean' ? logSettings : logSettings.enabled;
+  if (!isEnabled) return;
+
+  const targetChannelId = (typeof logSettings === 'object' && logSettings.channelId) ? logSettings.channelId : config.logChannelId;
+  if (!targetChannelId) return;
+
   try {
-    const channel = await client.channels.fetch(config.logChannelId);
-    if (channel) await channel.send({ embeds: [embed] });
+    const channel = client.channels.cache.get(targetChannelId) || await client.channels.fetch(targetChannelId).catch(() => null);
+    if (channel) await channel.send({ embeds: [embed] }).catch(() => {});
   } catch (err) {}
 }
 
@@ -1269,7 +1284,7 @@ client.on('messageDelete', async message => {
   if (ghostPing) embed.addFields({ name: 'Призрачное упоминание', value: '🛑 ДА' });
   
   embed.setTimestamp();
-  await sendLog(message.guild.id, embed, 'deletions');
+  await sendLog(message.guild.id, embed, 'deletions', message.channelId);
 });
 
 client.on('messageUpdate', async (oldMessage, newMessage) => {
@@ -1281,7 +1296,7 @@ client.on('messageUpdate', async (oldMessage, newMessage) => {
       { name: 'Было', value: oldMessage.content || '*[Без текста]*' },
       { name: 'Стало', value: newMessage.content || '*[Без текста]*' }
     ).setTimestamp();
-  await sendLog(oldMessage.guild.id, embed, 'edits');
+  await sendLog(oldMessage.guild.id, embed, 'edits', oldMessage.channelId);
 });
 
 client.on('guildMemberAdd', async member => {
